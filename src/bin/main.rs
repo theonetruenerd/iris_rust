@@ -10,7 +10,7 @@ use esp_hal::clock::CpuClock;
 use esp_hal::main;
 use esp_hal::time::{Duration, Instant};
 use esp_println::println;
-use esp_hal::gpio::{Level, Output};
+use esp_hal::gpio::{Level, Output, Input};
 
 #[panic_handler]
 fn panic(_: &core::panic::PanicInfo) -> ! {
@@ -29,13 +29,28 @@ fn main() -> ! {
     let config = esp_hal::Config::default().with_cpu_clock(CpuClock::max());
     let peripherals = esp_hal::init(config);
 
-    let mut led = Output::new(peripherals.GPIO2, Level::Low, Default::default());
-    let mut led_2 = Output::new(peripherals.GPIO1, Level::Low, Default::default());
+    let mut bl = Output::new(peripherals.GPIO38, Level::Low, Default::default());
+
+    // let grove = peripherals.GPIO1;
+    // let a0 = peripherals.GPIO8;
+    // let a1 = peripherals.GPIO9;
+    // let vbat = peripherals.GPIO10;
+    // let a2 = peripherals.GPIO11;
+    // let d_minus = peripherals.GPIO19;
+    // let d_plus = peripherals.GPIO20;
+    // let rst = peripherals.GPIO33;
+    // let rs = peripherals.GPIO34;
+    // let data = peripherals.GPIO35;
+    // let sck = peripherals.GPIO36;
+    // let cs = peripherals.GPIO37;
+    // let bl = peripherals.GPIO38;
+    // let bk = peripherals.GPIO41;
+    // let dat = peripherals.GPIO42;
+    // let lr = peripherals.GPIO43;
 
     loop {
-        // led.toggle();
-        println!("Toggling LED");
-        led_2.toggle();
+        println!("{:?}", bl.output_level());
+        // bl.toggle();
         let delay_start = Instant::now();
         while delay_start.elapsed() < Duration::from_millis(500) {}
     }
