@@ -31,22 +31,40 @@ fn main() -> ! {
 
     let mut bl = Output::new(peripherals.GPIO38, Level::Low, Default::default());
 
-    // let grove = peripherals.GPIO1;
-    // let a0 = peripherals.GPIO8;
-    // let a1 = peripherals.GPIO9;
-    // let vbat = peripherals.GPIO10;
-    // let a2 = peripherals.GPIO11;
-    // let d_minus = peripherals.GPIO19;
-    // let d_plus = peripherals.GPIO20;
-    // let rst = peripherals.GPIO33;
-    // let rs = peripherals.GPIO34;
-    // let data = peripherals.GPIO35;
-    // let sck = peripherals.GPIO36;
-    // let cs = peripherals.GPIO37;
-    // let bl = peripherals.GPIO38;
-    // let bk = peripherals.GPIO41;
-    // let dat = peripherals.GPIO42;
-    // let lr = peripherals.GPIO43;
+    // SPM1423: ESP32-S3FN8
+    // DAT: GPIO46
+    // CLK: GPIO43
+    // VCC: 3.3V
+    // GND: GND
+    // microSD Socket: ESP32-S3FN8
+    // CS: GPIO12
+    // MOSI: GPIO14
+    // CLK: GPIO40
+    // MISO: GPIO39
+    // ST7789V2: ESP32-S3FN8
+    // RGB LED: ESP32-S3FN8
+    // DISP_BL: GPIO38
+    // VDD: GPIO38
+    // RST: GPIO33
+    // RS: GPIO34
+    // DAT: GPIO35
+    // SCK: GPIO36
+    // CS: GPIO37
+    // Battery Detect ADC: ESP32-S3FN8
+    // 74HC138: ESP32-S3FN8
+    // ADC: GPIO10
+    // Y7-Y0: GPIO7-GPIO3, GPIO15, GPIO13
+    // A2, A1, A0: GPIO11, GPIO9, GPIO8
+    // NS4168 Speaker: ESP32-S3FN8
+    // IR: ESP32-S3FN8
+    // BCLK: GPIO41
+    // SDATA: GPIO42
+    // LRCLK: GPIO43
+    // TX: GPIO44
+    // Grove Black: GND
+    // Grove Red: 5V
+    // Grove Yellow: GPIO02
+    // Grove White: GPIO01
 
     loop {
         println!("{:?}", bl.output_level());
