@@ -6,6 +6,51 @@
     holding buffers for the duration of a data transfer."
 )]
 
+
+// SPM1423 (microphone)
+// DAT: GPIO46 (data)
+// CLK: GPIO43 (clock)
+// VCC: 3.3V (power)
+// GND: GND (ground)
+
+// microSD Socket
+// CS: GPIO12 (chip select)
+// MOSI: GPIO14 (master output slave input)
+// CLK: GPIO40 (clock)
+// MISO: GPIO39 (master input slave output)
+
+// ST7789V2 (screen)
+// DISP_BL: GPIO38  (backlight)
+// RST: GPIO33  (reset)
+// RS: GPIO34 (register select)
+// DAT: GPIO35 (data)
+// SCK: GPIO36 (serial clock)
+// CS: GPIO37 (chip select)
+
+// RGB LED
+// VDD: GPIO38
+
+// Battery Detect ADC
+// ADC: GPIO10 (analog digital converter)
+
+// 74HC138 (Keyboard)
+// Y7-Y0: GPIO7-GPIO3, GPIO15, GPIO13 (output lines)
+// A2, A1, A0: GPIO11, GPIO9, GPIO8 (address inputs)
+
+// NS4168 (speaker)
+// BCLK: GPIO41 (bit clock)
+// SDATA: GPIO42  (serial data)
+// LRCLK: GPIO43 (left-right clock)
+
+// IR
+// TX: GPIO44 (transmit)
+
+// Grove
+// Black: GND
+// Red: 5V
+// Yellow: GPIO02
+// White: GPIO01
+
 use embedded_hal_bus::spi::ExclusiveDevice;
 use embedded_sdmmc::{Mode, SdCard, TimeSource, Timestamp, VolumeIdx, VolumeManager};
 use esp_hal::clock::CpuClock;
@@ -15,8 +60,6 @@ use esp_hal::time::{Duration, Instant, Rate};
 use esp_println::println;
 use esp_hal::gpio::{Level, Output};
 use esp_hal::spi::master::Spi;
-use esp_hal::spi::master::Config as SpiConfig;
-use esp_hal::spi::Mode as SpiMode;
 
 #[panic_handler]
 fn panic(_: &core::panic::PanicInfo) -> ! {
@@ -37,7 +80,6 @@ impl TimeSource for DummyTimesource {
         }
     }
 }
-
 
 esp_bootloader_esp_idf::esp_app_desc!();
 
@@ -89,46 +131,8 @@ fn main() -> ! {
         println!("Wrote: {}", line);
     }
 
-    // SPM1423: ESP32-S3FN8
-    // DAT: GPIO46
-    // CLK: GPIO43
-    // VCC: 3.3V
-    // GND: GND
-    // microSD Socket: ESP32-S3FN8
-    // CS: GPIO12
-    // MOSI: GPIO14
-    // CLK: GPIO40
-    // MISO: GPIO39
-    // ST7789V2: ESP32-S3FN8
-    // RGB LED: ESP32-S3FN8
-    // DISP_BL: GPIO38
-    // VDD: GPIO38
-    // RST: GPIO33
-    // RS: GPIO34
-    // DAT: GPIO35
-    // SCK: GPIO36
-    // CS: GPIO37
-    // Battery Detect ADC: ESP32-S3FN8
-    // 74HC138: ESP32-S3FN8
-    // ADC: GPIO10
-    // Y7-Y0: GPIO7-GPIO3, GPIO15, GPIO13
-    // A2, A1, A0: GPIO11, GPIO9, GPIO8
-    // NS4168 Speaker: ESP32-S3FN8
-    // IR: ESP32-S3FN8
-    // BCLK: GPIO41
-    // SDATA: GPIO42
-    // LRCLK: GPIO43
-    // TX: GPIO44
-    // Grove Black: GND
-    // Grove Red: 5V
-    // Grove Yellow: GPIO02
-    // Grove White: GPIO01
-
     loop {
-        // println!("{:?}", bl.output_level());
-        // bl.toggle();
         let delay_start = Instant::now();
         while delay_start.elapsed() < Duration::from_millis(500) {}
     }
-
 }
