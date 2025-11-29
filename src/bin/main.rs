@@ -52,9 +52,8 @@
 // White: GPIO01
 
 use embedded_hal_bus::spi::ExclusiveDevice;
-use embedded_sdmmc::{Mode, SdCard, TimeSource, Timestamp, VolumeIdx, VolumeManager};
 use esp_hal::clock::CpuClock;
-use esp_hal::{main, spi};
+use esp_hal::main;
 use esp_hal::delay::Delay;
 use esp_hal::time::{Duration, Instant, Rate};
 use esp_println::println;
@@ -68,11 +67,10 @@ use mipidsi::{Builder, models::ST7789};
 use embedded_graphics::{
     prelude::*,
     pixelcolor::Rgb565,
-    mono_font::{ascii::FONT_10X20, MonoTextStyle},
-    text::Text,
-    primitives::{Circle, PrimitiveStyle, Primitive},
+    image::Image
 };
 use mipidsi::options::{ColorInversion, Orientation, Rotation};
+use tinybmp::Bmp;
 
 #[panic_handler]
 fn panic(_: &core::panic::PanicInfo) -> ! {
@@ -104,14 +102,22 @@ fn main() -> ! {
     let rst = Output::new(peripherals.GPIO33, Level::Low, OutputConfig::default());
 
     let mut delay = Delay::new();
-
-    let bl = Output::new(peripherals.GPIO38, Level::High, OutputConfig::default());
+    Output::new(peripherals.GPIO38, Level::High, OutputConfig::default());
 
     let spi_device = ExclusiveDevice::new_no_delay(spi, cs).unwrap();
 
     let mut buffer = [0u8; 512];
 
     let di = SpiInterface::new(spi_device, dc, &mut buffer);
+
+    let screen_width = 320;
+    let screen_height = 240;
+
+    let image_w = 240;
+    let image_h = 135;
+
+    let x_position = (screen_width - image_w) / 2;
+    let y_position = (screen_height - image_h) / 2;
 
     let mut display = Builder::new(ST7789, di)
         .reset_pin(rst)
@@ -120,20 +126,15 @@ fn main() -> ! {
         .init(&mut delay)
         .unwrap();
 
-    display.clear(Rgb565::WHITE).unwrap();
+    display.clear(Rgb565::BLACK).unwrap();
 
-    let text_style = MonoTextStyle::new(&FONT_10X20, Rgb565::BLACK);
+    let bmp_data = include_bytes!("../../assets/iris_background.bmp");
 
-    Text::new("Hello World!", Point::new(10, 50), text_style)
-        .draw(&mut display)
-        .unwrap();
 
-    let circle_style = PrimitiveStyle::with_stroke(Rgb565::RED, 5);
+    let bmp = Bmp::<Rgb565>::from_slice(bmp_data).unwrap();
 
-    Circle::new(Point::new(50, 80), 60)
-        .into_styled(circle_style)
-        .draw(&mut display)
-        .unwrap();
+    Image::new(&bmp, Point::new(x_position,y_position)).draw(&mut display).unwrap();
+
 
     loop {
         println!("Hello World!");
