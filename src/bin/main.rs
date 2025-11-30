@@ -57,7 +57,7 @@ use esp_hal::delay::Delay;
 use esp_hal::gpio::{Level, Output, OutputConfig};
 use esp_hal::spi::master::Spi;
 use esp_hal::time::{Duration, Instant, Rate};
-use esp_hal::main;
+use esp_hal::{dma_buffers, dma_descriptors, main};
 
 use zssh::AuthMethod;
 
@@ -74,6 +74,7 @@ use mipidsi::options::{ColorInversion, Orientation, Rotation};
 use mipidsi::{models::ST7789, Builder};
 use tinybmp::Bmp;
 use esp_hal::analog::adc::{AdcConfig, Adc, Attenuation};
+use esp_hal::i2s::master::{Channels, Config, DataFormat, I2s, I2sTx};
 use esp_println::println;
 use iris::apps::file_manager;
 
@@ -172,7 +173,6 @@ fn main() -> ! {
     );
 
     file_manager::list_files_in_folder(sd);
-
 
 
     loop {
