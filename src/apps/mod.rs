@@ -5,4 +5,5 @@ mod wifi;
 mod bluetooth;
 mod cctv;
 mod ssh;
-mod soc;
+mod display;
+mod power;
