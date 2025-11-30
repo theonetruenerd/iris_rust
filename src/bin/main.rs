@@ -53,28 +53,47 @@
 
 use embedded_hal_bus::spi::ExclusiveDevice;
 use esp_hal::clock::CpuClock;
-use esp_hal::main;
 use esp_hal::delay::Delay;
+use esp_hal::gpio::{Level, Output, OutputConfig};
+use esp_hal::main;
+use esp_hal::spi::master::Spi;
 use esp_hal::time::{Duration, Instant, Rate};
 use esp_println::println;
-use esp_hal::gpio::{Level, Output, OutputConfig};
-use esp_hal::spi::master::Spi;
 
+use embedded_graphics::{
+    image::Image,
+    pixelcolor::Rgb565,
+    prelude::*
+};
+use embedded_sdmmc::{TimeSource, Timestamp};
 use esp_hal::spi::master::Config as SpiConfig;
 use esp_hal::spi::Mode as SpiMode;
 use mipidsi::interface::SpiInterface;
-use mipidsi::{Builder, models::ST7789};
-use embedded_graphics::{
-    prelude::*,
-    pixelcolor::Rgb565,
-    image::Image
-};
 use mipidsi::options::{ColorInversion, Orientation, Rotation};
+use mipidsi::{models::ST7789, Builder};
 use tinybmp::Bmp;
+
+use iris::apps::file_manager;
 
 #[panic_handler]
 fn panic(_: &core::panic::PanicInfo) -> ! {
     loop {}
+}
+
+#[derive(Default)]
+pub struct DummyTimesource();
+
+impl TimeSource for DummyTimesource {
+    fn get_timestamp(&self) -> Timestamp {
+        Timestamp {
+            year_since_1970: 0,
+            zero_indexed_month: 0,
+            zero_indexed_day: 0,
+            hours: 0,
+            minutes: 0,
+            seconds: 0,
+        }
+    }
 }
 
 
@@ -129,15 +148,11 @@ fn main() -> ! {
     display.clear(Rgb565::BLACK).unwrap();
 
     let bmp_data = include_bytes!("../../assets/iris_background.bmp");
-
-
     let bmp = Bmp::<Rgb565>::from_slice(bmp_data).unwrap();
 
     Image::new(&bmp, Point::new(x_position,y_position)).draw(&mut display).unwrap();
 
-
     loop {
-        println!("Hello World!");
         let delay_start = Instant::now();
         while delay_start.elapsed() < Duration::from_millis(500) {}
     }
