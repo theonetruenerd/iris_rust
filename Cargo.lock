@@ -927,6 +927,7 @@ dependencies = [
  "esp-println",
  "esp32s3",
  "mipidsi",
+ "nb 1.1.0",
  "tinybmp",
  "zssh",
 ]

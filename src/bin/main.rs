@@ -73,6 +73,8 @@ use mipidsi::interface::SpiInterface;
 use mipidsi::options::{ColorInversion, Orientation, Rotation};
 use mipidsi::{models::ST7789, Builder};
 use tinybmp::Bmp;
+use esp_hal::analog::adc::{AdcConfig, Adc, Attenuation};
+use esp_println::println;
 use iris::apps::file_manager;
 
 // Consts
@@ -110,6 +112,12 @@ fn main() -> ! {
 
     let config = esp_hal::Config::default().with_cpu_clock(CpuClock::max());
     let peripherals = esp_hal::init(config);
+
+    let mut adc1_config = AdcConfig::new();
+    let mut adc = Adc::new(peripherals.ADC1, AdcConfig::default());
+
+    let mut battery_pin = adc1_config.enable_pin(peripherals.GPIO10, Attenuation::_11dB);
+    
 
     let spi = Spi::new(
         peripherals.SPI2,
@@ -169,6 +177,10 @@ fn main() -> ! {
 
     loop {
         let delay_start = Instant::now();
+        let battery_raw: u16 = nb::block!(adc.read_oneshot(&mut battery_pin)).unwrap();
+        let battery_voltage = (battery_raw as f32 * 3.3) / 4095.0;
+        let battery_percentage = ((battery_voltage - 2.5) / (4.2 - 2.5) * 100.0).max(0.0).min(100.0);
+        println!("Battery: {:.2}%", battery_percentage);
         while delay_start.elapsed() < Duration::from_millis(500) {}
     }
 }
