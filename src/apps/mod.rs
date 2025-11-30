@@ -5,3 +5,4 @@ mod wifi;
 mod bluetooth;
 mod cctv;
 mod ssh;
+mod soc;

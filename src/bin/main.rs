@@ -59,6 +59,8 @@ use esp_hal::spi::master::Spi;
 use esp_hal::time::{Duration, Instant, Rate};
 use esp_hal::main;
 
+use zssh::AuthMethod;
+
 use embedded_graphics::{
     image::Image,
     pixelcolor::Rgb565,
@@ -71,12 +73,14 @@ use mipidsi::interface::SpiInterface;
 use mipidsi::options::{ColorInversion, Orientation, Rotation};
 use mipidsi::{models::ST7789, Builder};
 use tinybmp::Bmp;
-
+use zssh::ed25519_dalek::{VerifyingKey, PUBLIC_KEY_LENGTH};
+use zssh::PublicKey::Ed25519;
 use iris::apps::file_manager;
 
 // Consts
 const DISPLAY_WIDTH: i32 = 320;
 const DISPLAY_HEIGHT: i32 = 240;
+
 
 #[panic_handler]
 fn panic(_: &core::panic::PanicInfo) -> ! {
@@ -162,6 +166,8 @@ fn main() -> ! {
     );
 
     file_manager::list_files_in_folder(sd);
+
+
 
     loop {
         let delay_start = Instant::now();
