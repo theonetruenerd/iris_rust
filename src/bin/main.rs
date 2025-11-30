@@ -73,8 +73,6 @@ use mipidsi::interface::SpiInterface;
 use mipidsi::options::{ColorInversion, Orientation, Rotation};
 use mipidsi::{models::ST7789, Builder};
 use tinybmp::Bmp;
-use zssh::ed25519_dalek::{VerifyingKey, PUBLIC_KEY_LENGTH};
-use zssh::PublicKey::Ed25519;
 use iris::apps::file_manager;
 
 // Consts
