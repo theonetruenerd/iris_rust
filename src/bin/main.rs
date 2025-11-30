@@ -55,7 +55,7 @@ use embedded_hal_bus::spi::ExclusiveDevice;
 use esp_hal::clock::CpuClock;
 use esp_hal::delay::Delay;
 use esp_hal::gpio::{Level, Output, OutputConfig};
-use esp_hal::main;
+use esp_hal::{main, peripherals};
 use esp_hal::spi::master::Spi;
 use esp_hal::time::{Duration, Instant, Rate};
 use esp_println::println;
@@ -65,7 +65,9 @@ use embedded_graphics::{
     pixelcolor::Rgb565,
     prelude::*
 };
-use embedded_sdmmc::{TimeSource, Timestamp};
+use embedded_sdmmc::{SdCard, TimeSource, Timestamp};
+use esp32s3::SPI3;
+use esp_hal::peripherals::{GPIO12, GPIO14, GPIO39};
 use esp_hal::spi::master::Config as SpiConfig;
 use esp_hal::spi::Mode as SpiMode;
 use mipidsi::interface::SpiInterface;
@@ -74,6 +76,10 @@ use mipidsi::{models::ST7789, Builder};
 use tinybmp::Bmp;
 
 use iris::apps::file_manager;
+
+// Consts
+const DISPLAY_WIDTH: i32 = 320;
+const DISPLAY_HEIGHT: i32 = 240;
 
 #[panic_handler]
 fn panic(_: &core::panic::PanicInfo) -> ! {
@@ -121,7 +127,7 @@ fn main() -> ! {
     let rst = Output::new(peripherals.GPIO33, Level::Low, OutputConfig::default());
 
     let mut delay = Delay::new();
-    Output::new(peripherals.GPIO38, Level::High, OutputConfig::default());
+    let bl = Output::new(peripherals.GPIO38, Level::High, OutputConfig::default());
 
     let spi_device = ExclusiveDevice::new_no_delay(spi, cs).unwrap();
 
@@ -129,14 +135,11 @@ fn main() -> ! {
 
     let di = SpiInterface::new(spi_device, dc, &mut buffer);
 
-    let screen_width = 320;
-    let screen_height = 240;
-
     let image_w = 240;
     let image_h = 135;
 
-    let x_position = (screen_width - image_w) / 2;
-    let y_position = (screen_height - image_h) / 2;
+    let x_position = (DISPLAY_WIDTH - image_w) / 2;
+    let y_position = (DISPLAY_HEIGHT - image_h) / 2;
 
     let mut display = Builder::new(ST7789, di)
         .reset_pin(rst)
@@ -147,13 +150,50 @@ fn main() -> ! {
 
     display.clear(Rgb565::BLACK).unwrap();
 
+
     let bmp_data = include_bytes!("../../assets/iris_background.bmp");
     let bmp = Bmp::<Rgb565>::from_slice(bmp_data).unwrap();
 
     Image::new(&bmp, Point::new(x_position,y_position)).draw(&mut display).unwrap();
 
+    sd_card_init(
+        peripherals.SPI3,
+        peripherals.GPIO40,
+        peripherals.GPIO14,
+        peripherals.GPIO39,
+        peripherals.GPIO12,
+    );
+
     loop {
         let delay_start = Instant::now();
         while delay_start.elapsed() < Duration::from_millis(500) {}
     }
+}
+
+fn sd_card_init(
+    spi:
+    sck: GPIO40,
+    mosi: GPIO14,s
+    miso: GPIO39,
+    cs: GPIO12,
+) {
+
+    let spi_sd = Spi::new(
+        spi,
+        SpiConfig::default()
+            .with_frequency(Rate::from_mhz(10))
+            .with_mode(SpiMode::_0),
+    )
+        .unwrap()
+        .with_sck(sck)
+        .with_mosi(mosi)
+        .with_miso(miso);
+
+    let sd_cs = Output::new(cs, Level::High, OutputConfig::default());
+    let sd_spi_device = ExclusiveDevice::new_no_delay(spi_sd, sd_cs).unwrap();
+    let sdcard = SdCard::new(sd_spi_device, Delay::new());
+
+    println!("Initializing SD card...");
+    let sd_size = sdcard.num_bytes().unwrap();
+    println!("SD card size: {} bytes", sd_size);
 }
