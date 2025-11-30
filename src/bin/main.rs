@@ -54,7 +54,7 @@
 use embedded_hal_bus::spi::ExclusiveDevice;
 use esp_hal::clock::CpuClock;
 use esp_hal::delay::Delay;
-use esp_hal::gpio::{Level, Output, OutputConfig};
+use esp_hal::gpio::{Input, InputConfig, Level, Output, OutputConfig};
 use esp_hal::spi::master::Spi;
 use esp_hal::time::{Duration, Instant, Rate};
 use esp_hal::main;
@@ -71,6 +71,7 @@ use mipidsi::options::{ColorInversion, Orientation, Rotation};
 use mipidsi::{models::ST7789, Builder};
 use tinybmp::Bmp;
 use esp_hal::analog::adc::{AdcConfig, Adc, Attenuation};
+use esp_hal::uart::{Uart, Config as UartConfig};
 use esp_println::println;
 use iris::apps::file_manager;
 
@@ -166,7 +167,18 @@ fn main() -> ! {
         peripherals.GPIO12,
     );
 
+    let mut uart = Uart::new(
+        peripherals.UART0,
+        UartConfig::default()
+            .with_baudrate(115200),
+        )
+        .unwrap()
+        .with_rx(peripherals.GPIO1)
+        .with_tx(peripherals.GPIO2);
+
     file_manager::list_files_in_folder(sd);
+
+    let mut buffer = [0u8; 128];
 
     loop {
         let delay_start = Instant::now();
@@ -174,6 +186,9 @@ fn main() -> ! {
         let battery_voltage = (battery_raw as f32 * 3.3) / 4095.0;
         let battery_percentage = ((battery_voltage - 2.5) / (4.2 - 2.5) * 100.0).max(0.0).min(100.0);
         println!("Battery: {:.2}%", battery_percentage);
-        while delay_start.elapsed() < Duration::from_millis(500) {}
+        match uart.read(&mut buffer) {
+            Ok(bytes_read) => println!("Read {} bytes: {:?}", bytes_read, core::str::from_utf8(&buffer[..bytes_read]).unwrap()),
+            Err(e) => println!("Error reading UART: {:?}", e),
+        }
     }
 }
