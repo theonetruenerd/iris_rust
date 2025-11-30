@@ -55,19 +55,16 @@ use embedded_hal_bus::spi::ExclusiveDevice;
 use esp_hal::clock::CpuClock;
 use esp_hal::delay::Delay;
 use esp_hal::gpio::{Level, Output, OutputConfig};
-use esp_hal::{main, peripherals};
 use esp_hal::spi::master::Spi;
 use esp_hal::time::{Duration, Instant, Rate};
-use esp_println::println;
+use esp_hal::main;
 
 use embedded_graphics::{
     image::Image,
     pixelcolor::Rgb565,
     prelude::*
 };
-use embedded_sdmmc::{SdCard, TimeSource, Timestamp};
-use esp32s3::SPI3;
-use esp_hal::peripherals::{GPIO12, GPIO14, GPIO39};
+use embedded_sdmmc::{TimeSource, Timestamp};
 use esp_hal::spi::master::Config as SpiConfig;
 use esp_hal::spi::Mode as SpiMode;
 use mipidsi::interface::SpiInterface;
@@ -156,7 +153,7 @@ fn main() -> ! {
 
     Image::new(&bmp, Point::new(x_position,y_position)).draw(&mut display).unwrap();
 
-    sd_card_init(
+    let sd = file_manager::sd_card_init(
         peripherals.SPI3,
         peripherals.GPIO40,
         peripherals.GPIO14,
@@ -164,36 +161,11 @@ fn main() -> ! {
         peripherals.GPIO12,
     );
 
+    file_manager::list_files_in_folder(sd);
+
     loop {
         let delay_start = Instant::now();
         while delay_start.elapsed() < Duration::from_millis(500) {}
     }
 }
 
-fn sd_card_init(
-    spi:
-    sck: GPIO40,
-    mosi: GPIO14,s
-    miso: GPIO39,
-    cs: GPIO12,
-) {
-
-    let spi_sd = Spi::new(
-        spi,
-        SpiConfig::default()
-            .with_frequency(Rate::from_mhz(10))
-            .with_mode(SpiMode::_0),
-    )
-        .unwrap()
-        .with_sck(sck)
-        .with_mosi(mosi)
-        .with_miso(miso);
-
-    let sd_cs = Output::new(cs, Level::High, OutputConfig::default());
-    let sd_spi_device = ExclusiveDevice::new_no_delay(spi_sd, sd_cs).unwrap();
-    let sdcard = SdCard::new(sd_spi_device, Delay::new());
-
-    println!("Initializing SD card...");
-    let sd_size = sdcard.num_bytes().unwrap();
-    println!("SD card size: {} bytes", sd_size);
-}
