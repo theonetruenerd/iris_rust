@@ -6,7 +6,7 @@ use esp_hal::gpio::{Level, Output, OutputConfig};
 use esp_hal::peripherals::{GPIO12, GPIO14, GPIO39, GPIO40, SPI3};
 use esp_hal::spi::master::Spi;
 use esp_hal::time::Rate;
-use esp_println::{print, println};
+use esp_println::println;
 use esp_hal::spi::master::Config as SpiConfig;
 use esp_hal::spi::Mode as SpiMode;
 

@@ -148,7 +148,7 @@ fn main() -> ! {
     display.clear(Rgb565::BLACK).unwrap();
 
 
-    let bmp_data = include_bytes!("../../assets/iris_background.bmp");
+    let bmp_data = include_bytes!("../../assets/images/iris_background.bmp");
     let bmp = Bmp::<Rgb565>::from_slice(bmp_data).unwrap();
 
     Image::new(&bmp, Point::new(x_position,y_position)).draw(&mut display).unwrap();
@@ -168,4 +168,3 @@ fn main() -> ! {
         while delay_start.elapsed() < Duration::from_millis(500) {}
     }
 }
-
