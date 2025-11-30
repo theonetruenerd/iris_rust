@@ -26,13 +26,16 @@ impl TimeSource for DummyTimesource {
     }
 }
 
+pub type SdCardType<'a> = SdCard<ExclusiveDevice<Spi<'a, Blocking>, Output<'a>, NoDelay>, Delay>;
+
+
 pub fn sd_card_init<'a> (
     spi: SPI3<'a>,
     sck: GPIO40<'a>,
     mosi: GPIO14<'a>,
     miso: GPIO39<'a>,
     cs: GPIO12<'a>,
-) -> SdCard<ExclusiveDevice<Spi<'a, Blocking>, Output<'a>, NoDelay>, Delay> {
+) -> SdCardType<'a> {
 
     let spi_sd = Spi::new(
         spi,
@@ -53,7 +56,7 @@ pub fn sd_card_init<'a> (
 }
 
 pub fn sd_card_bytes(
-    sdcard: SdCard<ExclusiveDevice<Spi<Blocking>, Output, NoDelay>, Delay>
+    sdcard: &mut SdCardType
 ) -> u64 {
     println!("Initializing SD card...");
     let sd_size = sdcard.num_bytes().unwrap();
@@ -63,7 +66,7 @@ pub fn sd_card_bytes(
 }
 
 pub fn list_files_in_folder(
-    sdcard: SdCard<ExclusiveDevice<Spi<Blocking>, Output, NoDelay>, Delay>
+    sdcard: SdCardType
 ) {
     let volume_mgr = VolumeManager::new(sdcard, DummyTimesource::default());
     let volume0 = volume_mgr.open_volume(VolumeIdx(0)).unwrap();
