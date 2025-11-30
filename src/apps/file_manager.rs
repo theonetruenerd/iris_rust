@@ -71,6 +71,6 @@ pub fn list_files_in_folder(
     let root_dir = volume0.open_root_dir().unwrap();
 
     let _ = root_dir.iterate_dir(|entry| {
-        println!("Found: {:?}", entry.name);
+        println!("{:?}", core::str::from_utf8(entry.name.base_name()).unwrap());
     });
 }

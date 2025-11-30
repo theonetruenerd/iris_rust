@@ -57,10 +57,7 @@ use esp_hal::delay::Delay;
 use esp_hal::gpio::{Level, Output, OutputConfig};
 use esp_hal::spi::master::Spi;
 use esp_hal::time::{Duration, Instant, Rate};
-use esp_hal::{dma_buffers, dma_descriptors, main};
-
-use zssh::AuthMethod;
-
+use esp_hal::main;
 use embedded_graphics::{
     image::Image,
     pixelcolor::Rgb565,
@@ -74,7 +71,6 @@ use mipidsi::options::{ColorInversion, Orientation, Rotation};
 use mipidsi::{models::ST7789, Builder};
 use tinybmp::Bmp;
 use esp_hal::analog::adc::{AdcConfig, Adc, Attenuation};
-use esp_hal::i2s::master::{Channels, Config, DataFormat, I2s, I2sTx};
 use esp_println::println;
 use iris::apps::file_manager;
 
@@ -103,7 +99,6 @@ impl TimeSource for DummyTimesource {
         }
     }
 }
-
 
 esp_bootloader_esp_idf::esp_app_desc!();
 
@@ -158,7 +153,6 @@ fn main() -> ! {
 
     display.clear(Rgb565::BLACK).unwrap();
 
-
     let bmp_data = include_bytes!("../../assets/images/iris_background.bmp");
     let bmp = Bmp::<Rgb565>::from_slice(bmp_data).unwrap();
 
@@ -173,7 +167,6 @@ fn main() -> ! {
     );
 
     file_manager::list_files_in_folder(sd);
-
 
     loop {
         let delay_start = Instant::now();
