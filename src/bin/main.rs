@@ -74,7 +74,6 @@ use esp_hal::uart::{Uart, Config as UartConfig};
 use esp_println::println;
 use iris::apps::file_manager;
 use iris::apps::gps;
-use iris::apps::power;
 use iris::apps::power::get_battery_percentage;
 
 // Consts
