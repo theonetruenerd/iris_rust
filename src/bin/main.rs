@@ -70,10 +70,12 @@ use mipidsi::interface::SpiInterface;
 use mipidsi::options::{ColorInversion, Orientation, Rotation};
 use mipidsi::{models::ST7789, Builder};
 use tinybmp::Bmp;
-use esp_hal::analog::adc::{AdcConfig, Adc, Attenuation};
 use esp_hal::uart::{Uart, Config as UartConfig};
 use esp_println::println;
 use iris::apps::file_manager;
+use iris::apps::gps;
+use iris::apps::power;
+use iris::apps::power::get_battery_percentage;
 
 // Consts
 const DISPLAY_WIDTH: i32 = 320;
@@ -101,87 +103,6 @@ impl TimeSource for DummyTimesource {
     }
 }
 
-pub struct NmeaBuffer {
-    buffer: [u8; 512],
-    write_pos: usize,
-    read_pos: usize,
-}
-
-impl NmeaBuffer {
-    pub fn new() -> Self {
-        Self {
-            buffer: [0u8; 512],
-            write_pos: 0,
-            read_pos: 0,
-        }
-    }
-
-    /// Add new data to the buffer
-    pub fn add_data(&mut self, data: &[u8]) {
-        for &byte in data {
-            self.buffer[self.write_pos] = byte;
-            self.write_pos = (self.write_pos + 1) % self.buffer.len();
-
-            // Prevent overflow - this is a safety measure
-            if self.write_pos == self.read_pos {
-                self.read_pos = (self.read_pos + 1) % self.buffer.len();
-            }
-        }
-    }
-
-    /// Try to extract a complete NMEA sentence (ending with \r\n)
-    pub fn get_sentence(&mut self) -> Option<NmeaSentence> {
-        let mut sentence_len = 0;
-        let mut pos = self.read_pos;
-
-        // Search for \r\n
-        while pos != self.write_pos {
-            if sentence_len > 0 && self.buffer[pos] == b'\n' &&
-                self.buffer[(pos + self.buffer.len() - 1) % self.buffer.len()] == b'\r' {
-                // Found end of sentence
-                sentence_len += 1;
-                break;
-            }
-            pos = (pos + 1) % self.buffer.len();
-            sentence_len += 1;
-        }
-
-        // If we found a complete sentence
-        if pos != self.write_pos && self.buffer[pos] == b'\n' {
-            let mut sentence_data = [0u8; 128];
-            let mut idx = 0;
-            let mut temp_pos = self.read_pos;
-
-            while temp_pos != pos {
-                sentence_data[idx] = self.buffer[temp_pos];
-                idx += 1;
-                temp_pos = (temp_pos + 1) % self.buffer.len();
-            }
-
-            // Skip the \r\n
-            self.read_pos = (pos + 1) % self.buffer.len();
-
-            return Some(NmeaSentence {
-                data: sentence_data,
-                length: idx,
-            });
-        }
-
-        None
-    }
-}
-
-pub struct NmeaSentence {
-    pub data: [u8; 128],
-    pub length: usize,
-}
-
-impl NmeaSentence {
-    pub fn as_str(&self) -> Result<&str, core::str::Utf8Error> {
-        core::str::from_utf8(&self.data[..self.length.saturating_sub(2)]) // Remove \r\n
-    }
-}
-
 esp_bootloader_esp_idf::esp_app_desc!();
 
 #[main]
@@ -191,11 +112,6 @@ fn main() -> ! {
     let config = esp_hal::Config::default().with_cpu_clock(CpuClock::max());
     let peripherals = esp_hal::init(config);
 
-    let mut adc1_config = AdcConfig::new();
-    let mut adc = Adc::new(peripherals.ADC1, AdcConfig::default());
-
-    let mut battery_pin = adc1_config.enable_pin(peripherals.GPIO10, Attenuation::_11dB);
-    
 
     let spi = Spi::new(
         peripherals.SPI2,
@@ -259,20 +175,15 @@ fn main() -> ! {
 
     file_manager::list_files_in_folder(sd);
 
-    let mut nmea_buffer = NmeaBuffer::new();
+    let mut nmea_buffer = gps::NmeaBuffer::new();
     let mut buffer = [0u8; 128];
 
+    println!("Battery percentage: {}%", get_battery_percentage(peripherals.ADC1, peripherals.GPIO10));
     loop {
-        let delay_start = Instant::now();
-        let battery_raw: u16 = nb::block!(adc.read_oneshot(&mut battery_pin)).unwrap();
-        let battery_voltage = (battery_raw as f32 * 3.3) / 4095.0;
-        let battery_percentage = ((battery_voltage - 2.5) / (4.2 - 2.5) * 100.0).max(0.0).min(100.0);
-        println!("Battery: {:.2}%", battery_percentage);
         match uart.read(&mut buffer) {
             Ok(bytes_read) => {
                 nmea_buffer.add_data(&buffer[..bytes_read]);
 
-                // Try to extract complete sentences
                 while let Some(sentence) = nmea_buffer.get_sentence() {
                     if let Ok(sentence_str) = sentence.as_str() {
                         println!("Complete NMEA: {}", sentence_str);

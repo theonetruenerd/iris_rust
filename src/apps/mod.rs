@@ -6,4 +6,4 @@ mod bluetooth;
 mod cctv;
 mod ssh;
 mod display;
-mod power;
+pub mod power;
