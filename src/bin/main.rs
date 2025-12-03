@@ -76,6 +76,9 @@ use iris::apps::file_manager;
 use iris::apps::gps;
 use iris::apps::power::get_battery_percentage;
 use core::panic::PanicInfo;
+use iris::apps::usb;
+use iris::apps::ssh;
+use iris::apps::display;
 
 // Consts
 const DISPLAY_WIDTH: i32 = 320;
@@ -178,6 +181,10 @@ fn main() -> ! {
 
     let mut nmea_buffer = gps::NmeaBuffer::new();
     let mut buffer = [0u8; 128];
+
+    usb::write_str(peripherals.USB_DEVICE, "Hello from Iris!\r\n");
+
+    ssh::setup_auth();
 
     println!("Battery percentage: {}%", get_battery_percentage(peripherals.ADC1, peripherals.GPIO10));
     loop {

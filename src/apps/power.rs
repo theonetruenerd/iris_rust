@@ -12,6 +12,6 @@ pub fn get_battery_percentage(
 
     let battery_raw: u16 = nb::block!(adc.read_oneshot(&mut battery_pin)).unwrap();
     let battery_voltage = (battery_raw as u32 * 330) / 4095;
-    let battery_percentage = ((battery_voltage - 250 ) / 170 * 100).max(0).min(100);
-    battery_percentage as u8
+    let battery_percentage = battery_voltage.saturating_sub(250)*100 / 170;
+    battery_percentage.min(100) as u8
 }

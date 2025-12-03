@@ -45,3 +45,21 @@
 - Red: 5V
 - Yellow: GPIO02
 - White: GPIO01
+
+## Code Optimisations to remember
+
+Static rather than dynamic memory allocation where possible
+
+Smallest valid integer types
+
+Replace large buffers with streams
+
+Heapless collections
+
+Avoid duplicated code
+
+Optimize string handling with &str rather than String
+
+Review feature flags
+
+Use ints rather than floats where possible
