@@ -115,8 +115,7 @@ fn main() -> ! {
 
     let config = esp_hal::Config::default().with_cpu_clock(CpuClock::max());
     let peripherals = esp_hal::init(config);
-
-
+    
     let spi = Spi::new(
         peripherals.SPI2,
         SpiConfig::default()
@@ -132,7 +131,7 @@ fn main() -> ! {
     let rst = Output::new(peripherals.GPIO33, Level::Low, OutputConfig::default());
 
     let mut delay = Delay::new();
-    let bl = Output::new(peripherals.GPIO38, Level::High, OutputConfig::default());
+    Output::new(peripherals.GPIO38, Level::High, OutputConfig::default());
 
     let spi_device = ExclusiveDevice::new_no_delay(spi, cs).unwrap();
 
@@ -152,14 +151,12 @@ fn main() -> ! {
         .orientation(Orientation::new().rotate(Rotation::Deg90))
         .init(&mut delay)
         .unwrap();
-
-    display.clear(Rgb565::BLACK).unwrap();
-
+    
     let bmp_data = include_bytes!("../../assets/images/iris_background.bmp");
     let bmp = Bmp::<Rgb565>::from_slice(bmp_data).unwrap();
 
     Image::new(&bmp, Point::new(x_position,y_position)).draw(&mut display).unwrap();
-
+    
     let sd = file_manager::sd_card_init(
         peripherals.SPI3,
         peripherals.GPIO40,
