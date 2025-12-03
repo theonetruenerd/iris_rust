@@ -54,9 +54,9 @@
 use embedded_hal_bus::spi::ExclusiveDevice;
 use esp_hal::clock::CpuClock;
 use esp_hal::delay::Delay;
-use esp_hal::gpio::{Input, InputConfig, Level, Output, OutputConfig};
+use esp_hal::gpio::{Level, Output, OutputConfig};
 use esp_hal::spi::master::Spi;
-use esp_hal::time::{Duration, Instant, Rate};
+use esp_hal::time::Rate;
 use esp_hal::main;
 use embedded_graphics::{
     image::Image,
