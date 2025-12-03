@@ -75,6 +75,7 @@ use esp_println::println;
 use iris::apps::file_manager;
 use iris::apps::gps;
 use iris::apps::power::get_battery_percentage;
+use core::panic::PanicInfo;
 
 // Consts
 const DISPLAY_WIDTH: i32 = 320;
@@ -82,7 +83,8 @@ const DISPLAY_HEIGHT: i32 = 240;
 
 
 #[panic_handler]
-fn panic(_: &core::panic::PanicInfo) -> ! {
+fn panic(info: &PanicInfo) -> ! {
+    println!("Panic occurred: {}", info);
     loop {}
 }
 
