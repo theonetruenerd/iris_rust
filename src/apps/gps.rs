@@ -1,3 +1,4 @@
+use esp_println::println;
 
 pub struct NmeaBuffer {
     buffer: [u8; 512],
@@ -78,4 +79,10 @@ impl NmeaSentence {
     pub fn as_str(&self) -> Result<&str, core::str::Utf8Error> {
         core::str::from_utf8(&self.data[..self.length.saturating_sub(2)]) // Remove \r\n
     }
+}
+
+pub fn parse_nmea_sentence(sentence: &NmeaSentence) -> &str {
+    let sentence_str = sentence.as_str();
+    sentence_str.unwrap_or_else(|_| "Failed to parse NMEA sentence");
+    "test"
 }
