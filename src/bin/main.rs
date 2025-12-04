@@ -76,6 +76,7 @@ use iris::apps::file_manager;
 use iris::apps::gps;
 use iris::apps::power::get_battery_percentage;
 use core::panic::PanicInfo;
+use iris::apps::display::display_app_icon;
 use iris::apps::usb;
 use iris::apps::ssh;
 
@@ -151,10 +152,10 @@ fn main() -> ! {
         .init(&mut delay)
         .unwrap();
 
-    let bmp_data = include_bytes!("../../assets/images/iris_background.bmp");
-    let bmp = Bmp::<Rgb565>::from_slice(bmp_data).unwrap();
-
-    Image::new(&bmp, Point::new(x_position,y_position)).draw(&mut display).unwrap();
+    // let bmp_data = include_bytes!("../../assets/images/iris_background.bmp");
+    // let bmp = Bmp::<Rgb565>::from_slice(bmp_data).unwrap();
+    //
+    // Image::new(&bmp, Point::new(x_position,y_position)).draw(&mut display).unwrap();
 
     let sd = file_manager::sd_card_init(
         peripherals.SPI3,
