@@ -78,7 +78,6 @@ use iris::apps::power::get_battery_percentage;
 use core::panic::PanicInfo;
 use iris::apps::usb;
 use iris::apps::ssh;
-use iris::apps::display;
 
 // Consts
 const DISPLAY_WIDTH: i32 = 320;
@@ -115,7 +114,7 @@ fn main() -> ! {
 
     let config = esp_hal::Config::default().with_cpu_clock(CpuClock::max());
     let peripherals = esp_hal::init(config);
-    
+
     let spi = Spi::new(
         peripherals.SPI2,
         SpiConfig::default()
@@ -151,12 +150,12 @@ fn main() -> ! {
         .orientation(Orientation::new().rotate(Rotation::Deg90))
         .init(&mut delay)
         .unwrap();
-    
+
     let bmp_data = include_bytes!("../../assets/images/iris_background.bmp");
     let bmp = Bmp::<Rgb565>::from_slice(bmp_data).unwrap();
 
     Image::new(&bmp, Point::new(x_position,y_position)).draw(&mut display).unwrap();
-    
+
     let sd = file_manager::sd_card_init(
         peripherals.SPI3,
         peripherals.GPIO40,

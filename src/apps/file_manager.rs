@@ -1,5 +1,6 @@
+use embedded_graphics::pixelcolor::Rgb565;
 use embedded_hal_bus::spi::{ExclusiveDevice, NoDelay};
-use embedded_sdmmc::{SdCard, TimeSource, VolumeIdx, VolumeManager};
+use embedded_sdmmc::{Mode, SdCard, TimeSource, VolumeIdx, VolumeManager};
 use esp_hal::Blocking;
 use esp_hal::delay::Delay;
 use esp_hal::gpio::{Level, Output, OutputConfig};
@@ -9,6 +10,7 @@ use esp_hal::time::Rate;
 use esp_println::println;
 use esp_hal::spi::master::Config as SpiConfig;
 use esp_hal::spi::Mode as SpiMode;
+use tinybmp::Bmp;
 
 #[derive(Default)]
 pub struct DummyTimesource();
@@ -76,4 +78,30 @@ pub fn list_files_in_folder(
     let _ = root_dir.iterate_dir(|entry| {
         println!("{:?}", core::str::from_utf8(entry.name.base_name()).unwrap());
     });
+}
+
+pub fn get_bmp<'a>(
+    sdcard: SdCardType<'a>,
+    icon_name: &'a str,
+    buffer: &'a mut [u8]
+) -> Bmp<'a, Rgb565> {
+    let volume_mgr = VolumeManager::new(sdcard, DummyTimesource::default());
+    let volume0 = volume_mgr.open_volume(VolumeIdx(0)).unwrap();
+
+    // Open file
+    let mut root = volume0.open_root_dir().unwrap();
+    let mut file = root.open_file_in_dir(icon_name,Mode::ReadOnly).unwrap();
+    let mut bytes_read = 0;
+    let file_size = file.length() as usize;
+    while bytes_read < file_size {
+        match file.read(&mut buffer[bytes_read..file_size]) {
+            Ok(0) => break, // End of file
+            Ok(n) => bytes_read += n,
+            _ => {}
+        }
+    }
+
+    // Parse BMP
+    let bmp = Bmp::from_slice(&buffer[..file_size]).expect("Failed to decode BMP");
+    bmp
 }
