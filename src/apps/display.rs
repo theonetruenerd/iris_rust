@@ -2,7 +2,7 @@ use embedded_graphics::geometry::Point;
 use embedded_graphics::image::Image;
 use embedded_graphics::pixelcolor::{Rgb565, RgbColor};
 use embedded_graphics::Drawable;
-use embedded_graphics::mono_font::ascii::{FONT_10X20, FONT_6X10};
+use embedded_graphics::mono_font::ascii::{FONT_10X20};
 use embedded_graphics::mono_font::MonoTextStyle;
 use embedded_graphics::text::Text;
 use embedded_hal_bus::spi::{ExclusiveDevice, NoDelay};

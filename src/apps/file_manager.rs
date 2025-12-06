@@ -95,7 +95,7 @@ pub fn get_bmp<'a>(
     let file_size = file.length() as usize;
     while bytes_read < file_size {
         match file.read(&mut buffer[bytes_read..file_size]) {
-            Ok(0) => break, // End of file
+            Ok(0) => break, // End of the bmp file
             Ok(n) => bytes_read += n,
             _ => {}
         }
