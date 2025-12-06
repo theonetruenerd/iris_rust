@@ -89,8 +89,8 @@ pub fn get_bmp<'a>(
     let volume0 = volume_mgr.open_volume(VolumeIdx(0)).unwrap();
 
     // Open file
-    let mut root = volume0.open_root_dir().unwrap();
-    let mut file = root.open_file_in_dir(icon_name,Mode::ReadOnly).unwrap();
+    let root = volume0.open_root_dir().unwrap();
+    let file = root.open_file_in_dir(icon_name,Mode::ReadOnly).unwrap();
     let mut bytes_read = 0;
     let file_size = file.length() as usize;
     while bytes_read < file_size {
