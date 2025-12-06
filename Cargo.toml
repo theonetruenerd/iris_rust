@@ -22,6 +22,7 @@ mipidsi = "0.9.0"
 tinybmp = "0.6.0"
 zssh = "0.4.2"
 nb = "1.1.0"
+peripherals = "0.1.1"
 
 
 [profile.dev]

@@ -51,38 +51,22 @@
 // Yellow: GPIO02
 // White: GPIO01
 
-use embedded_hal_bus::spi::ExclusiveDevice;
 use esp_hal::clock::CpuClock;
-use esp_hal::delay::Delay;
 use esp_hal::gpio::{Level, Output, OutputConfig};
-use esp_hal::spi::master::Spi;
-use esp_hal::time::Rate;
 use esp_hal::main;
-use embedded_graphics::{
-    image::Image,
-    pixelcolor::Rgb565,
-    prelude::*
-};
 use embedded_sdmmc::{TimeSource, Timestamp};
-use esp_hal::spi::master::Config as SpiConfig;
-use esp_hal::spi::Mode as SpiMode;
-use mipidsi::interface::SpiInterface;
-use mipidsi::options::{ColorInversion, Orientation, Rotation};
-use mipidsi::{models::ST7789, Builder};
-use tinybmp::Bmp;
 use esp_hal::uart::{Uart, Config as UartConfig};
 use esp_println::println;
 use iris::apps::file_manager;
 use iris::apps::gps;
 use iris::apps::power::get_battery_percentage;
 use core::panic::PanicInfo;
-use iris::apps::display::display_app_icon;
+use iris::apps::display::{display_background};
+use iris::apps::file_manager::get_bmp;
 use iris::apps::usb;
 use iris::apps::ssh;
 
-// Consts
-const DISPLAY_WIDTH: i32 = 320;
-const DISPLAY_HEIGHT: i32 = 240;
+
 
 
 #[panic_handler]
@@ -116,46 +100,11 @@ fn main() -> ! {
     let config = esp_hal::Config::default().with_cpu_clock(CpuClock::max());
     let peripherals = esp_hal::init(config);
 
-    let spi = Spi::new(
-        peripherals.SPI2,
-        SpiConfig::default()
-            .with_frequency(Rate::from_mhz(10))
-            .with_mode(SpiMode::_0),
-        )
-        .unwrap()
-        .with_sck(peripherals.GPIO36)
-        .with_mosi(peripherals.GPIO35);
-
-    let cs = Output::new(peripherals.GPIO37, Level::High, OutputConfig::default());
-    let dc = Output::new(peripherals.GPIO34, Level::Low, OutputConfig::default());
-    let rst = Output::new(peripherals.GPIO33, Level::Low, OutputConfig::default());
-
-    let mut delay = Delay::new();
     Output::new(peripherals.GPIO38, Level::High, OutputConfig::default());
 
-    let spi_device = ExclusiveDevice::new_no_delay(spi, cs).unwrap();
+    let mut buffer = [0u8; 128];
 
-    let mut buffer = [0u8; 512];
-
-    let di = SpiInterface::new(spi_device, dc, &mut buffer);
-
-    let image_w = 240;
-    let image_h = 135;
-
-    let x_position = (DISPLAY_WIDTH - image_w) / 2;
-    let y_position = (DISPLAY_HEIGHT - image_h) / 2;
-
-    let mut display = Builder::new(ST7789, di)
-        .reset_pin(rst)
-        .invert_colors(ColorInversion::Inverted)
-        .orientation(Orientation::new().rotate(Rotation::Deg90))
-        .init(&mut delay)
-        .unwrap();
-
-    // let bmp_data = include_bytes!("../../assets/images/iris_background.bmp");
-    // let bmp = Bmp::<Rgb565>::from_slice(bmp_data).unwrap();
-    //
-    // Image::new(&bmp, Point::new(x_position,y_position)).draw(&mut display).unwrap();
+    let mut bmp_buffer = [0u8; 102400];
 
     let sd = file_manager::sd_card_init(
         peripherals.SPI3,
@@ -165,6 +114,17 @@ fn main() -> ! {
         peripherals.GPIO12,
     );
 
+    let bmp = get_bmp(sd, "iris.bmp", &mut bmp_buffer );
+
+    display_background(
+        peripherals.GPIO37,
+        peripherals.GPIO34,
+        peripherals.GPIO33,
+        peripherals.SPI2,
+        peripherals.GPIO36,
+        peripherals.GPIO35,
+        bmp,
+    );
     let mut uart = Uart::new(
         peripherals.UART0,
         UartConfig::default()
@@ -174,10 +134,9 @@ fn main() -> ! {
         .with_rx(peripherals.GPIO1)
         .with_tx(peripherals.GPIO2);
 
-    file_manager::list_files_in_folder(sd);
+    // file_manager::list_files_in_folder(sd);
 
     let mut nmea_buffer = gps::NmeaBuffer::new();
-    let mut buffer = [0u8; 128];
 
     usb::write_str(peripherals.USB_DEVICE, "Hello from Iris!\r\n");
 

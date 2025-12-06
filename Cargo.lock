@@ -928,6 +928,7 @@ dependencies = [
  "esp32s3",
  "mipidsi",
  "nb 1.1.0",
+ "peripherals",
  "tinybmp",
  "zssh",
 ]
@@ -1048,6 +1049,15 @@ name = "paste"
 version = "1.0.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
+
+[[package]]
+name = "peripherals"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "219f5767aba82b2c0e02ea8cad0b13365ac745d582b56208ee27e72c954d105e"
+dependencies = [
+ "paste",
+]
 
 [[package]]
 name = "pin-project-lite"

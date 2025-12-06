@@ -1,6 +1,6 @@
 use core::fmt::Write;
-use esp_hal::usb_serial_jtag::UsbSerialJtag;
 use esp_hal::peripherals::USB_DEVICE;
+use esp_hal::usb_serial_jtag::UsbSerialJtag;
 
 pub fn write_str(
     usb_device: USB_DEVICE,

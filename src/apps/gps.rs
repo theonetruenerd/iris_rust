@@ -1,4 +1,3 @@
-use esp_println::println;
 
 pub struct NmeaBuffer {
     buffer: [u8; 512],
@@ -15,7 +14,6 @@ impl NmeaBuffer {
         }
     }
 
-    /// Add new data to the buffer
     pub fn add_data(&mut self, data: &[u8]) {
         for &byte in data {
             self.buffer[self.write_pos] = byte;
@@ -28,16 +26,13 @@ impl NmeaBuffer {
         }
     }
 
-    /// Try to extract a complete NMEA sentence (ending with \r\n)
     pub fn get_sentence(&mut self) -> Option<NmeaSentence> {
         let mut sentence_len = 0;
         let mut pos = self.read_pos;
 
-        // Search for \r\n
         while pos != self.write_pos {
             if sentence_len > 0 && self.buffer[pos] == b'\n' &&
                 self.buffer[(pos + self.buffer.len() - 1) % self.buffer.len()] == b'\r' {
-                // Found end of sentence
                 sentence_len += 1;
                 break;
             }
@@ -45,7 +40,6 @@ impl NmeaBuffer {
             sentence_len += 1;
         }
 
-        // If we found a complete sentence
         if pos != self.write_pos && self.buffer[pos] == b'\n' {
             let mut sentence_data = [0u8; 128];
             let mut idx = 0;
@@ -57,7 +51,6 @@ impl NmeaBuffer {
                 temp_pos = (temp_pos + 1) % self.buffer.len();
             }
 
-            // Skip the \r\n
             self.read_pos = (pos + 1) % self.buffer.len();
 
             return Some(NmeaSentence {

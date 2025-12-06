@@ -1,5 +1,5 @@
-use zssh::{AuthMethod, PublicKey::Ed25519};
 use zssh::ed25519_dalek::{VerifyingKey, PUBLIC_KEY_LENGTH};
+use zssh::{AuthMethod, PublicKey::Ed25519};
 
 const FULL_KEY: &[u8] = b"AAAAC3NzaC1lZDI1NTE5AAAAICHAM1KLDKxCvqUmGSNsKjc3/rGue0OHHBkX/NWSQ8n5";
 

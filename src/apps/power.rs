@@ -1,4 +1,4 @@
-use esp_hal::analog::adc::{AdcConfig, Adc, Attenuation};
+use esp_hal::analog::adc::{Adc, AdcConfig, Attenuation};
 use esp_hal::peripherals::{ADC1, GPIO10};
 
 pub fn get_battery_percentage(
