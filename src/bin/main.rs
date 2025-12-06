@@ -73,9 +73,11 @@ fn panic(info: &PanicInfo) -> ! {
     loop {}
 }
 
+// Creates the dummy timesource for the SD card
 #[derive(Default)]
 pub struct DummyTimesource();
 
+// Returns a dummy timestamp
 impl TimeSource for DummyTimesource {
     fn get_timestamp(&self) -> Timestamp {
         Timestamp {
@@ -89,21 +91,28 @@ impl TimeSource for DummyTimesource {
     }
 }
 
+// ESP-IDF app descriptor - required for bootloader
 esp_bootloader_esp_idf::esp_app_desc!();
 
 #[main]
 fn main() -> ! {
+    // Initialize logger
     esp_println::logger::init_logger_from_env();
 
+    // Setup ESP32 peripherals
     let config = esp_hal::Config::default().with_cpu_clock(CpuClock::max());
     let peripherals = esp_hal::init(config);
 
+    // Initialize backlight
     Output::new(peripherals.GPIO38, Level::High, OutputConfig::default());
 
+    // Create buffer for reading GPS data
     let mut buffer = [0u8; 128];
 
+    // Create bmp buffer for loading images
     let mut bmp_buffer = [0u8; 102400];
 
+    // Initialize SD card
     let sd = file_manager::sd_card_init(
         peripherals.SPI3,
         peripherals.GPIO40,
@@ -112,8 +121,10 @@ fn main() -> ! {
         peripherals.GPIO12,
     );
 
+    // Get iris background image from SD card
     let bmp = get_bmp(sd, "iris.bmp", &mut bmp_buffer );
 
+    // Display background image
     display_background(
         peripherals.GPIO37,
         peripherals.GPIO34,
@@ -124,6 +135,7 @@ fn main() -> ! {
         bmp,
     );
 
+    // Initialize UART
     let mut uart = Uart::new(
         peripherals.UART0,
         UartConfig::default()
@@ -135,14 +147,21 @@ fn main() -> ! {
 
     // file_manager::list_files_in_folder(sd);
 
+    // Create NMEA buffer for GPS data reading
     let mut nmea_buffer = gps::NmeaBuffer::new();
 
+    // Write string to USB connected device
     usb::write_str(peripherals.USB_DEVICE, "Hello from Iris!\r\n");
 
+    // Setup SSH server authentication
     ssh::setup_auth();
 
+    // Prints current battery percentage to USB connected terminal
     println!("Battery percentage: {}%", get_battery_percentage(peripherals.ADC1, peripherals.GPIO10));
+
+    // Creates main loop
     loop {
+        // Reads data from UART and parses NMEA sentences
         match uart.read(&mut buffer) {
             Ok(bytes_read) => {
                 nmea_buffer.add_data(&buffer[..bytes_read]);
