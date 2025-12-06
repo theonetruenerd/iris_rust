@@ -67,8 +67,6 @@ use iris::apps::usb;
 use iris::apps::ssh;
 
 
-
-
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     println!("Panic occurred: {}", info);
@@ -125,6 +123,7 @@ fn main() -> ! {
         peripherals.GPIO35,
         bmp,
     );
+
     let mut uart = Uart::new(
         peripherals.UART0,
         UartConfig::default()

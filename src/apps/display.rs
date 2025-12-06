@@ -1,7 +1,10 @@
 use embedded_graphics::geometry::Point;
 use embedded_graphics::image::Image;
-use embedded_graphics::pixelcolor::Rgb565;
+use embedded_graphics::pixelcolor::{Rgb565, RgbColor};
 use embedded_graphics::Drawable;
+use embedded_graphics::mono_font::ascii::{FONT_10X20, FONT_6X10};
+use embedded_graphics::mono_font::MonoTextStyle;
+use embedded_graphics::text::Text;
 use embedded_hal_bus::spi::{ExclusiveDevice, NoDelay};
 use esp_hal::delay::Delay;
 use esp_hal::gpio::{Level, Output, OutputConfig};
@@ -22,6 +25,7 @@ const APP_IMAGE_CENTER_X: i32 = 70;
 const APP_IMAGE_CENTER_Y: i32 = 70;
 const DISPLAY_WIDTH: i32 = 320;
 const DISPLAY_HEIGHT: i32 = 240;
+
 
 pub fn turn_on_backlight(pin: &mut Output) {
     pin.set_high();
@@ -44,6 +48,14 @@ pub fn display_app_icon(
 {
     Image::new(&image, Point::new(APP_IMAGE_CENTER_X, APP_IMAGE_CENTER_Y)).draw(&mut display).unwrap();
 }
+
+pub fn display_text(
+    text: &str, mut display: Display<SpiInterface<ExclusiveDevice<Spi<Blocking>, Output, NoDelay>, Output>, ST7789, Output>
+) {
+    let character_style = MonoTextStyle::new(&FONT_10X20, Rgb565::WHITE);
+    Text::new(&text, Point::new(80, 100), character_style).draw(&mut display).unwrap();
+}
+
 
 pub fn display_background(
     gpio37: peripherals::GPIO37<'static>,
@@ -92,4 +104,5 @@ pub fn display_background(
 
 
     Image::new(&bmp, Point::new(x_position,y_position)).draw(&mut display).unwrap();
+    display_text("Welcome, Tarun", display);
 }
