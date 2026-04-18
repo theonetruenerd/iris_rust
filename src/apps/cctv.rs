@@ -37,7 +37,7 @@ impl CctvToolkit {
             } else {
                 Rgb565::WHITE
             };
-            draw_text(display, module, Point::new(20, 45 + (i as i32 * 20)), color);
+            draw_text(display, module, Point::new(20, 35 + (i as i32 * 12)), color);
         }
 
         draw_text(display, ";/. Up/Down  Enter Select", Point::new(10, 110), Rgb565::new(31, 63, 31));

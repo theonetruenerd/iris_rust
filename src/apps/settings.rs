@@ -66,7 +66,7 @@ impl SettingsApp {
                 }
             }
             
-            draw_text(display, text.as_str(), Point::new(20, 35 + (i as i32 * 15)), color);
+            draw_text(display, text.as_str(), Point::new(20, 35 + (i as i32 * 12)), color);
         }
     }
 
@@ -84,12 +84,12 @@ impl SettingsApp {
             
             if let Some((col, row)) = keyboard.scan() {
                 match (col, row) {
-                    (0, 0) => { // Next/Down
+                    (0, 0) | (1, 0) | (2, 0) | (3, 0) | (4, 0) | (5, 0) | (6, 0) | (7, 0) => { // Next/Down
                         self.selected_option = (self.selected_option + 1) % self.options.len();
                         needs_redraw = true;
                         delay.delay_millis(200);
                     }
-                    (0, 1) => { // Select
+                    (0, 1) | (1, 1) | (2, 1) | (3, 1) | (4, 1) | (5, 1) | (6, 1) | (7, 1) => { // Select
                         match self.options[self.selected_option] {
                             "Wi-Fi" => self.wifi_menu(display, delay, keyboard),
                             "Brightness" => self.adjust_brightness(display, delay, keyboard),
@@ -101,7 +101,7 @@ impl SettingsApp {
                         needs_redraw = true;
                         delay.delay_millis(200);
                     }
-                    (0, 2) => { // Back
+                    (0, 2) | (1, 2) | (2, 2) | (3, 2) | (4, 2) | (5, 2) | (6, 2) | (7, 2) => { // Back
                         self.is_running = false;
                         delay.delay_millis(200);
                     }
@@ -126,7 +126,7 @@ impl SettingsApp {
             
             for (i, &opt) in wifi_options.iter().enumerate() {
                 let color = if i == wifi_selected { Rgb565::YELLOW } else { Rgb565::WHITE };
-                draw_text(display, opt, Point::new(20, 35 + (i as i32 * 15)), color);
+                draw_text(display, opt, Point::new(20, 35 + (i as i32 * 12)), color);
             }
 
             if let Some((col, row)) = keyboard.scan() {
@@ -174,7 +174,7 @@ impl SettingsApp {
             draw_text(display, "Select Network", Point::new(10, 15), Rgb565::GREEN);
             for (i, net) in networks.iter().enumerate() {
                 let color = if i == selected_net { Rgb565::YELLOW } else { Rgb565::WHITE };
-                draw_text(display, net, Point::new(20, 35 + (i as i32 * 15)), color);
+                draw_text(display, net, Point::new(20, 35 + (i as i32 * 12)), color);
             }
 
             if let Some((col, row)) = keyboard.scan() {

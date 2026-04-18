@@ -64,7 +64,7 @@ where
         } else {
             Rgb565::WHITE
         };
-        draw_text(display, item, Point::new(10, 20 + (i as i32 * 15)), color);
+        draw_text(display, item, Point::new(10, 15 + (i as i32 * 12)), color);
     }
 }
 

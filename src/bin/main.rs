@@ -233,12 +233,12 @@ fn main() -> ! {
         if let Some((col, row)) = keyboard.scan() {
             println!("Key pressed: col {}, row {}", col, row);
             match (col, row) {
-                (0, 0) => {
+                (0, 0) | (1, 0) | (2, 0) | (3, 0) | (4, 0) | (5, 0) | (6, 0) | (7, 0) => {
                     selected_idx = (selected_idx + 1) % menu_items.len();
                     needs_redraw = true;
                     delay.delay_millis(200);
                 }
-                (0, 1) => {
+                (0, 1) | (1, 1) | (2, 1) | (3, 1) | (4, 1) | (5, 1) | (6, 1) | (7, 1) => {
                     match menu_items[selected_idx] {
                         "Scanner" => {
                             println!("Starting I2C Scanner...");
@@ -276,15 +276,15 @@ fn main() -> ! {
                                 toolkit.render_menu(&mut display);
                                 if let Some((col, row)) = keyboard.scan() {
                                     match (col, row) {
-                                        (0, 0) => { // Up/Next
+                                        (0, 0) | (1, 0) | (2, 0) | (3, 0) | (4, 0) | (5, 0) | (6, 0) | (7, 0) => { // Up/Next
                                             toolkit.selected_module = (toolkit.selected_module + 1) % toolkit.modules.len();
                                             delay.delay_millis(200);
                                         }
-                                        (0, 1) => { // Select
+                                        (0, 1) | (1, 1) | (2, 1) | (3, 1) | (4, 1) | (5, 1) | (6, 1) | (7, 1) => { // Select
                                             toolkit.run_module(&mut display, &mut delay);
                                             delay.delay_millis(200);
                                         }
-                                        (0, 2) => { // Backspace/Back
+                                        (0, 2) | (1, 2) | (2, 2) | (3, 2) | (4, 2) | (5, 2) | (6, 2) | (7, 2) => { // Backspace/Back
                                             break;
                                         }
                                         _ => {}
