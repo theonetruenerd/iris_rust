@@ -85,6 +85,7 @@ pub fn get_bmp<'a>(
     icon_name: &'a str,
     buffer: &'a mut [u8]
 ) -> Bmp<'a, Rgb565> {
+    use embedded_sdmmc::VolumeIdx;
     let volume_mgr = VolumeManager::new(sdcard, DummyTimesource::default());
     let volume0 = volume_mgr.open_volume(VolumeIdx(0)).unwrap();
 

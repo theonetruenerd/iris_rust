@@ -74,10 +74,12 @@ use esp_hal::uart::{Uart, Config as UartConfig};
 use esp_println::println;
 use iris::apps::file_manager;
 use iris::apps::gps;
-use iris::apps::power::get_battery_percentage;
+use iris::drivers::power::get_battery_percentage;
 use core::panic::PanicInfo;
-use iris::apps::display::display_app_icon;
-use iris::apps::usb;
+use iris::drivers::display::{display_app_icon, draw_menu};
+use iris::drivers::keyboard::Keyboard;
+use esp_hal::gpio::{Input, InputConfig, Pull};
+use iris::drivers::usb;
 use iris::apps::ssh;
 
 // Consts
@@ -131,7 +133,7 @@ fn main() -> ! {
     let rst = Output::new(peripherals.GPIO33, Level::Low, OutputConfig::default());
 
     let mut delay = Delay::new();
-    Output::new(peripherals.GPIO38, Level::High, OutputConfig::default());
+    let mut backlight = Output::new(peripherals.GPIO38, Level::High, OutputConfig::default());
 
     let spi_device = ExclusiveDevice::new_no_delay(spi, cs).unwrap();
 
@@ -184,19 +186,42 @@ fn main() -> ! {
     ssh::setup_auth();
 
     println!("Battery percentage: {}%", get_battery_percentage(peripherals.ADC1, peripherals.GPIO10));
-    loop {
-        match uart.read(&mut buffer) {
-            Ok(bytes_read) => {
-                nmea_buffer.add_data(&buffer[..bytes_read]);
+    let menu_items = ["GPS", "File Manager", "SSH Auth", "Power"];
+    let mut selected_idx = 0;
 
-                while let Some(sentence) = nmea_buffer.get_sentence() {
-                    if let Ok(sentence_str) = sentence.as_str() {
-                        println!("Complete NMEA: {}", sentence_str);
-                        // Parse the sentence here
-                    }
+    let keyboard_a0 = Output::new(peripherals.GPIO8, Level::Low, OutputConfig::default());
+    let keyboard_a1 = Output::new(peripherals.GPIO9, Level::Low, OutputConfig::default());
+    let keyboard_a2 = Output::new(peripherals.GPIO11, Level::Low, OutputConfig::default());
+
+    let keyboard_rows = [
+        Input::new(peripherals.GPIO13, InputConfig::default().with_pull(Pull::Up)),
+        Input::new(peripherals.GPIO15, InputConfig::default().with_pull(Pull::Up)),
+        Input::new(peripherals.GPIO3, InputConfig::default().with_pull(Pull::Up)),
+        Input::new(peripherals.GPIO4, InputConfig::default().with_pull(Pull::Up)),
+        Input::new(peripherals.GPIO5, InputConfig::default().with_pull(Pull::Up)),
+        Input::new(peripherals.GPIO6, InputConfig::default().with_pull(Pull::Up)),
+        Input::new(peripherals.GPIO7, InputConfig::default().with_pull(Pull::Up)),
+    ];
+
+    let mut keyboard = Keyboard::new(keyboard_a0, keyboard_a1, keyboard_a2, keyboard_rows);
+
+    loop {
+        draw_menu(&mut display, &menu_items, selected_idx);
+
+        if let Some((col, row)) = keyboard.scan() {
+            println!("Key pressed: col {}, row {}", col, row);
+            // Implement navigation logic here
+            // For example, row 0 col 0 could be "Up", row 0 col 1 "Down"
+            // Cardputer keyboard layout needs to be mapped.
+            match (col, row) {
+                (0, 0) => { // Just an example mapping
+                    selected_idx = (selected_idx + 1) % menu_items.len();
+                    delay.delay_millis(200);
                 }
+                _ => {}
             }
-            Err(e) => println!("Error reading UART: {:?}", e),
         }
+
+        delay.delay_millis(100);
     }
 }

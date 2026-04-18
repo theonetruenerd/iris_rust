@@ -1,12 +1,9 @@
 pub mod file_manager;
-pub mod companion;
 pub mod gps;
+pub mod ssh;
 mod wifi;
 mod bluetooth;
 mod cctv;
-pub mod ssh;
-pub mod display;
-pub mod power;
 mod radar;
 mod joystick;
 mod gesture;
@@ -19,4 +16,3 @@ mod nfc;
 mod mag_switch;
 mod gas_sensor;
 mod breadboard;
-pub mod usb;
