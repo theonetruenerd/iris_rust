@@ -81,6 +81,7 @@ use iris::drivers::keyboard::Keyboard;
 use esp_hal::gpio::{Input, InputConfig, Pull};
 use iris::drivers::usb;
 use iris::apps::ssh;
+use iris::apps::cctv;
 use iris::apps::scanner;
 use esp_hal::i2c::master::{Config as I2cConfig, I2c};
 
@@ -188,7 +189,7 @@ fn main() -> ! {
     ssh::setup_auth();
 
     println!("Battery percentage: {}%", get_battery_percentage(peripherals.ADC1, peripherals.GPIO10));
-    let menu_items = ["GPS", "File Manager", "SSH Auth", "Scanner", "Power"];
+    let menu_items = ["GPS", "File Manager", "SSH Auth", "CCTV Toolkit", "Scanner", "Power"];
     let mut selected_idx = 0;
 
     let keyboard_a0 = Output::new(peripherals.GPIO8, Level::Low, OutputConfig::default());
@@ -250,6 +251,31 @@ fn main() -> ! {
                                     terminal.write_char('.');
                                     terminal.render(&mut display);
                                     delay.delay_millis(150);
+                                }
+                                delay.delay_millis(50);
+                            }
+                        }
+                        "CCTV Toolkit" => {
+                            println!("Starting CCTV Toolkit...");
+                            let mut toolkit = cctv::CctvToolkit::new();
+                            
+                            loop {
+                                toolkit.render_menu(&mut display);
+                                if let Some((col, row)) = keyboard.scan() {
+                                    match (col, row) {
+                                        (0, 0) => { // Up/Next
+                                            toolkit.selected_module = (toolkit.selected_module + 1) % toolkit.modules.len();
+                                            delay.delay_millis(200);
+                                        }
+                                        (0, 1) => { // Select
+                                            toolkit.run_module(&mut display, &mut delay);
+                                            delay.delay_millis(200);
+                                        }
+                                        (0, 2) => { // Backspace/Back
+                                            break;
+                                        }
+                                        _ => {}
+                                    }
                                 }
                                 delay.delay_millis(50);
                             }
