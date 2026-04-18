@@ -86,6 +86,7 @@ use iris::apps::scanner;
 use iris::apps::wifi;
 use iris::apps::bluetooth;
 use iris::apps::settings;
+use iris::apps::ir;
 use esp_hal::i2c::master::{Config as I2cConfig, I2c};
 
 // Consts
@@ -182,7 +183,8 @@ fn main() -> ! {
     //     .with_rx(peripherals.GPIO1)
     //     .with_tx(peripherals.GPIO2);
 
-    file_manager::list_files_in_folder(sd);
+    // file_manager::list_files_in_folder(sd);
+    let mut sd = sd;
 
     let mut nmea_buffer = gps::NmeaBuffer::new();
     let mut buffer = [0u8; 128];
@@ -192,7 +194,7 @@ fn main() -> ! {
     ssh::setup_auth();
 
     println!("Battery percentage: {}%", get_battery_percentage(peripherals.ADC1, peripherals.GPIO10));
-    let menu_items = ["GPS", "File Manager", "SSH Auth", "CCTV Toolkit", "Scanner", "Marauder", "Bluetooth", "Settings", "Power"];
+    let menu_items = ["GPS", "File Manager", "SSH Auth", "CCTV Toolkit", "Scanner", "Marauder", "Bluetooth", "IR Controller", "Settings", "Power"];
     let mut selected_idx = 0;
 
     let keyboard_a0 = Output::new(peripherals.GPIO8, Level::Low, OutputConfig::default());
@@ -292,6 +294,11 @@ fn main() -> ! {
                             println!("Starting Bluetooth Tools...");
                             let mut bt_app = bluetooth::BluetoothApp::new();
                             bt_app.run(&mut display, &mut delay, &mut keyboard);
+                        }
+                        "IR Controller" => {
+                            println!("Starting IR Controller...");
+                            let mut ir_app = ir::IrApp::new();
+                            ir_app.run(&mut display, &mut delay, &mut keyboard, &mut sd);
                         }
                         "Settings" => {
                             println!("Starting Settings...");
