@@ -81,6 +81,8 @@ use iris::drivers::keyboard::Keyboard;
 use esp_hal::gpio::{Input, InputConfig, Pull};
 use iris::drivers::usb;
 use iris::apps::ssh;
+use iris::apps::scanner;
+use esp_hal::i2c::master::{Config as I2cConfig, I2c};
 
 // Consts
 const DISPLAY_WIDTH: i32 = 320;
@@ -167,14 +169,14 @@ fn main() -> ! {
         peripherals.GPIO12,
     );
 
-    let mut uart = Uart::new(
-        peripherals.UART0,
-        UartConfig::default()
-            .with_baudrate(115200),
-        )
-        .unwrap()
-        .with_rx(peripherals.GPIO1)
-        .with_tx(peripherals.GPIO2);
+    // let mut uart = Uart::new(
+    //     peripherals.UART0,
+    //     UartConfig::default()
+    //         .with_baudrate(115200),
+    //     )
+    //     .unwrap()
+    //     .with_rx(peripherals.GPIO1)
+    //     .with_tx(peripherals.GPIO2);
 
     file_manager::list_files_in_folder(sd);
 
@@ -186,7 +188,7 @@ fn main() -> ! {
     ssh::setup_auth();
 
     println!("Battery percentage: {}%", get_battery_percentage(peripherals.ADC1, peripherals.GPIO10));
-    let menu_items = ["GPS", "File Manager", "SSH Auth", "Power"];
+    let menu_items = ["GPS", "File Manager", "SSH Auth", "Scanner", "Power"];
     let mut selected_idx = 0;
 
     let keyboard_a0 = Output::new(peripherals.GPIO8, Level::Low, OutputConfig::default());
@@ -205,6 +207,14 @@ fn main() -> ! {
 
     let mut keyboard = Keyboard::new(keyboard_a0, keyboard_a1, keyboard_a2, keyboard_rows);
 
+    let mut i2c = I2c::new(
+        peripherals.I2C0,
+        I2cConfig::default().with_frequency(Rate::from_khz(100)),
+    )
+    .unwrap()
+    .with_sda(peripherals.GPIO1)
+    .with_scl(peripherals.GPIO2);
+
     loop {
         draw_menu(&mut display, &menu_items, selected_idx);
 
@@ -216,6 +226,18 @@ fn main() -> ! {
             match (col, row) {
                 (0, 0) => { // Just an example mapping
                     selected_idx = (selected_idx + 1) % menu_items.len();
+                    delay.delay_millis(200);
+                }
+                (0, 1) => { // Assume this is the "Enter" or "Select" key
+                    match menu_items[selected_idx] {
+                        "Scanner" => {
+                            println!("Starting I2C Scanner...");
+                            scanner::scan_i2c(&mut i2c);
+                        }
+                        _ => {
+                            println!("Selected: {}", menu_items[selected_idx]);
+                        }
+                    }
                     delay.delay_millis(200);
                 }
                 _ => {}

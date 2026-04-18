@@ -13,6 +13,7 @@ mod camera;
 mod gsr;
 mod heart_rate;
 mod nfc;
+pub mod scanner;
 mod mag_switch;
 mod gas_sensor;
 mod breadboard;
