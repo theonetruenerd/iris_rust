@@ -83,6 +83,7 @@ use iris::drivers::usb;
 use iris::apps::ssh;
 use iris::apps::cctv;
 use iris::apps::scanner;
+use iris::apps::wifi;
 use esp_hal::i2c::master::{Config as I2cConfig, I2c};
 
 // Consts
@@ -189,7 +190,7 @@ fn main() -> ! {
     ssh::setup_auth();
 
     println!("Battery percentage: {}%", get_battery_percentage(peripherals.ADC1, peripherals.GPIO10));
-    let menu_items = ["GPS", "File Manager", "SSH Auth", "CCTV Toolkit", "Scanner", "Power"];
+    let menu_items = ["GPS", "File Manager", "SSH Auth", "CCTV Toolkit", "Scanner", "Marauder", "Power"];
     let mut selected_idx = 0;
 
     let keyboard_a0 = Output::new(peripherals.GPIO8, Level::Low, OutputConfig::default());
@@ -279,6 +280,11 @@ fn main() -> ! {
                                 }
                                 delay.delay_millis(50);
                             }
+                        }
+                        "Marauder" => {
+                            println!("Starting Marauder...");
+                            let mut marauder = wifi::MarauderApp::new();
+                            marauder.run(&mut display, &mut delay, &mut keyboard);
                         }
                         _ => {
                             println!("Selected: {}", menu_items[selected_idx]);

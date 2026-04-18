@@ -1,7 +1,7 @@
 pub mod file_manager;
 pub mod gps;
 pub mod ssh;
-mod wifi;
+pub mod wifi;
 mod bluetooth;
 pub mod cctv;
 pub mod radar;
