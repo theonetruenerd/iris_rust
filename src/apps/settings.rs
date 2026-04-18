@@ -130,13 +130,14 @@ impl SettingsApp {
                 draw_text(display, opt, Point::new(20, 35 + (i as i32 * 12)), color);
             }
 
-            if let Some((col, row)) = keyboard.scan() {
-                match (col, row) {
-                    (0, 0) => {
+            if let Some(key) = keyboard.get_key() {
+                use crate::drivers::keyboard::Key;
+                match key {
+                    Key::Down | Key::Up => {
                         wifi_selected = (wifi_selected + 1) % wifi_options.len();
                         delay.delay_millis(200);
                     }
-                    (0, 1) => {
+                    Key::Enter => {
                         match wifi_options[wifi_selected] {
                             "Scan Networks" => self.scan_wifi(display, delay, keyboard),
                             "Saved Networks" => self.saved_networks(display, delay, keyboard),
@@ -150,7 +151,7 @@ impl SettingsApp {
                         }
                         delay.delay_millis(200);
                     }
-                    (0, 2) => wifi_running = false,
+                    Key::Backspace | Key::Esc => wifi_running = false,
                     _ => {}
                 }
             }
@@ -178,17 +179,19 @@ impl SettingsApp {
                 draw_text(display, net, Point::new(20, 35 + (i as i32 * 12)), color);
             }
 
-            if let Some((col, row)) = keyboard.scan() {
-                match (col, row) {
-                    (0, 0) => {
+            if let Some(key) = keyboard.get_key() {
+                use crate::drivers::keyboard::Key;
+                match key {
+                    Key::Down | Key::Up => {
                         selected_net = (selected_net + 1) % networks.len();
                         delay.delay_millis(200);
                     }
-                    (0, 1) => {
+                    Key::Enter => {
                         self.connect_to(networks[selected_net], display, delay, keyboard);
                         scanning = false;
+                        delay.delay_millis(200);
                     }
-                    (0, 2) => scanning = false,
+                    Key::Backspace | Key::Esc => scanning = false,
                     _ => {}
                 }
             }

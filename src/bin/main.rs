@@ -269,12 +269,10 @@ fn main() -> ! {
                                         break;
                                     }
                                     // Map keyboard to characters and write to terminal
-                                    if let Key::Char(c) = k {
+                                    if let Some(c) = keyboard.get_char() {
                                         terminal.write_char(c);
-                                    } else if k == Key::Enter {
-                                        terminal.write_char('\n');
+                                        terminal.render(&mut display);
                                     }
-                                    terminal.render(&mut display);
                                     delay.delay_millis(150);
                                 }
                                 delay.delay_millis(50);
