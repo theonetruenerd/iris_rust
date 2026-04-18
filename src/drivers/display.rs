@@ -56,12 +56,7 @@ where
     use embedded_graphics::primitives::{Rectangle, PrimitiveStyleBuilder, StyledDrawable};
     use embedded_graphics::Drawable;
 
-    let bg_style = PrimitiveStyleBuilder::new()
-        .fill_color(Rgb565::BLACK)
-        .build();
-    Rectangle::new(Point::new(0, 0), Size::new(240, 135))
-        .draw_styled(&bg_style, display)
-        .ok();
+    clear_screen(display);
 
     for (i, &item) in items.iter().enumerate() {
         let color = if i == selected_idx {
@@ -71,4 +66,17 @@ where
         };
         draw_text(display, item, Point::new(10, 20 + (i as i32 * 15)), color);
     }
+}
+
+pub fn clear_screen<D>(display: &mut D)
+where
+    D: DrawTarget<Color = Rgb565>,
+{
+    use embedded_graphics::primitives::{Rectangle, PrimitiveStyleBuilder, StyledDrawable};
+    let bg_style = PrimitiveStyleBuilder::new()
+        .fill_color(Rgb565::BLACK)
+        .build();
+    Rectangle::new(Point::new(0, 0), Size::new(320, 240))
+        .draw_styled(&bg_style, display)
+        .ok();
 }

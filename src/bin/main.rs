@@ -220,19 +220,39 @@ fn main() -> ! {
 
         if let Some((col, row)) = keyboard.scan() {
             println!("Key pressed: col {}, row {}", col, row);
-            // Implement navigation logic here
-            // For example, row 0 col 0 could be "Up", row 0 col 1 "Down"
-            // Cardputer keyboard layout needs to be mapped.
             match (col, row) {
-                (0, 0) => { // Just an example mapping
+                (0, 0) => {
                     selected_idx = (selected_idx + 1) % menu_items.len();
                     delay.delay_millis(200);
                 }
-                (0, 1) => { // Assume this is the "Enter" or "Select" key
+                (0, 1) => {
                     match menu_items[selected_idx] {
                         "Scanner" => {
                             println!("Starting I2C Scanner...");
                             scanner::scan_i2c(&mut i2c);
+                        }
+                        "SSH Auth" => {
+                            println!("Starting SSH Terminal...");
+                            let mut terminal = ssh::Terminal::new();
+                            terminal.write_str("\x1b[32mIris SSH Terminal\x1b[0m\n");
+                            terminal.write_str("Connecting...\n");
+                            
+                            // Mock terminal interaction for now
+                            terminal.render(&mut display);
+                            
+                            loop {
+                                if let Some((c, r)) = keyboard.scan() {
+                                    if c == 0 && r == 2 { // Assume escape or something to exit
+                                        break;
+                                    }
+                                    // Map keyboard to characters and write to terminal
+                                    // For now just show we can write
+                                    terminal.write_char('.');
+                                    terminal.render(&mut display);
+                                    delay.delay_millis(150);
+                                }
+                                delay.delay_millis(50);
+                            }
                         }
                         _ => {
                             println!("Selected: {}", menu_items[selected_idx]);
