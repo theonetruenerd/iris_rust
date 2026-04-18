@@ -76,7 +76,7 @@ where
     let bg_style = PrimitiveStyleBuilder::new()
         .fill_color(Rgb565::BLACK)
         .build();
-    Rectangle::new(Point::new(0, 0), Size::new(320, 240))
+    Rectangle::new(Point::new(0, 0), Size::new(240, 135))
         .draw_styled(&bg_style, display)
         .ok();
 }

@@ -53,13 +53,18 @@ impl IrApp {
         D: DrawTarget<Color = Rgb565>,
     {
         self.is_running = true;
+        let mut needs_redraw = true;
         while self.is_running {
-            self.render(display);
+            if needs_redraw {
+                self.render(display);
+                needs_redraw = false;
+            }
             
             if let Some((col, row)) = keyboard.scan() {
                 match (col, row) {
                     (0, 0) => { // Next
                         self.selected_option = (self.selected_option + 1) % self.options.len();
+                        needs_redraw = true;
                         delay.delay_millis(200);
                     }
                     (0, 1) => { // Select
@@ -78,7 +83,7 @@ impl IrApp {
                                 
                                 println!("IR App: SD Database mode (querying SD card placeholder)");
 
-                                draw_text(display, "Press any key to back", Point::new(10, 220), Rgb565::YELLOW);
+                                draw_text(display, "Press any key to back", Point::new(10, 120), Rgb565::YELLOW);
                                 delay.delay_millis(500);
                                 loop {
                                     if keyboard.scan().is_some() { break; }
@@ -88,6 +93,7 @@ impl IrApp {
                             "Back" => self.is_running = false,
                             _ => {}
                         }
+                        needs_redraw = true;
                         delay.delay_millis(200);
                     }
                     (0, 2) => { // Back
@@ -97,7 +103,7 @@ impl IrApp {
                     _ => {}
                 }
             }
-            delay.delay_millis(50);
+            delay.delay_millis(10);
         }
     }
 

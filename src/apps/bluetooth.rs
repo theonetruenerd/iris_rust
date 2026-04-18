@@ -50,13 +50,18 @@ impl BluetoothApp {
         D: DrawTarget<Color = Rgb565>,
     {
         self.is_running = true;
+        let mut needs_redraw = true;
         while self.is_running {
-            self.render(display);
+            if needs_redraw {
+                self.render(display);
+                needs_redraw = false;
+            }
             
             if let Some((col, row)) = keyboard.scan() {
                 match (col, row) {
                     (0, 0) => { // Next/Down
                         self.selected_option = (self.selected_option + 1) % self.options.len();
+                        needs_redraw = true;
                         delay.delay_millis(200);
                     }
                     (0, 1) => { // Select
@@ -68,6 +73,7 @@ impl BluetoothApp {
                             "Back" => self.is_running = false,
                             _ => {}
                         }
+                        needs_redraw = true;
                         delay.delay_millis(200);
                     }
                     (0, 2) => { // Back
@@ -77,7 +83,7 @@ impl BluetoothApp {
                     _ => {}
                 }
             }
-            delay.delay_millis(50);
+            delay.delay_millis(10);
         }
     }
 

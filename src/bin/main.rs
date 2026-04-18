@@ -90,8 +90,8 @@ use iris::apps::ir;
 use esp_hal::i2c::master::{Config as I2cConfig, I2c};
 
 // Consts
-const DISPLAY_WIDTH: i32 = 320;
-const DISPLAY_HEIGHT: i32 = 240;
+const DISPLAY_WIDTH: i32 = 240;
+const DISPLAY_HEIGHT: i32 = 135;
 
 
 #[panic_handler]
@@ -156,6 +156,8 @@ fn main() -> ! {
 
     let mut display = Builder::new(ST7789, di)
         .reset_pin(rst)
+        .display_size(135, 240)
+        .display_offset(40, 52)
         .invert_colors(ColorInversion::Inverted)
         .orientation(Orientation::new().rotate(Rotation::Deg90))
         .init(&mut delay)
@@ -221,14 +223,19 @@ fn main() -> ! {
     .with_sda(peripherals.GPIO1)
     .with_scl(peripherals.GPIO2);
 
+    let mut needs_redraw = true;
     loop {
-        draw_menu(&mut display, &menu_items, selected_idx);
+        if needs_redraw {
+            draw_menu(&mut display, &menu_items, selected_idx);
+            needs_redraw = false;
+        }
 
         if let Some((col, row)) = keyboard.scan() {
             println!("Key pressed: col {}, row {}", col, row);
             match (col, row) {
                 (0, 0) => {
                     selected_idx = (selected_idx + 1) % menu_items.len();
+                    needs_redraw = true;
                     delay.delay_millis(200);
                 }
                 (0, 1) => {
@@ -259,6 +266,7 @@ fn main() -> ! {
                                 }
                                 delay.delay_millis(50);
                             }
+                            needs_redraw = true;
                         }
                         "CCTV Toolkit" => {
                             println!("Starting CCTV Toolkit...");
@@ -284,26 +292,31 @@ fn main() -> ! {
                                 }
                                 delay.delay_millis(50);
                             }
+                            needs_redraw = true;
                         }
                         "Marauder" => {
                             println!("Starting Marauder...");
                             let mut marauder = wifi::MarauderApp::new();
                             marauder.run(&mut display, &mut delay, &mut keyboard);
+                            needs_redraw = true;
                         }
                         "Bluetooth" => {
                             println!("Starting Bluetooth Tools...");
                             let mut bt_app = bluetooth::BluetoothApp::new();
                             bt_app.run(&mut display, &mut delay, &mut keyboard);
+                            needs_redraw = true;
                         }
                         "IR Controller" => {
                             println!("Starting IR Controller...");
                             let mut ir_app = ir::IrApp::new();
                             ir_app.run(&mut display, &mut delay, &mut keyboard, &mut sd);
+                            needs_redraw = true;
                         }
                         "Settings" => {
                             println!("Starting Settings...");
                             let mut settings_app = settings::SettingsApp::new();
                             settings_app.run(&mut display, &mut delay, &mut keyboard);
+                            needs_redraw = true;
                         }
                         _ => {
                             println!("Selected: {}", menu_items[selected_idx]);
@@ -315,6 +328,6 @@ fn main() -> ! {
             }
         }
 
-        delay.delay_millis(100);
+        delay.delay_millis(10);
     }
 }

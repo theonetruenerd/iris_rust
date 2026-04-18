@@ -40,8 +40,8 @@ impl CctvToolkit {
             draw_text(display, module, Point::new(20, 45 + (i as i32 * 20)), color);
         }
 
-        draw_text(display, ";/. Up/Down  Enter Select", Point::new(10, 220), Rgb565::new(31, 63, 31));
-        draw_text(display, "Backspace Back", Point::new(10, 235), Rgb565::new(31, 63, 31));
+        draw_text(display, ";/. Up/Down  Enter Select", Point::new(10, 110), Rgb565::new(31, 63, 31));
+        draw_text(display, "Backspace Back", Point::new(10, 125), Rgb565::new(31, 63, 31));
     }
 
     pub fn run_module<D>(&self, display: &mut D, delay: &mut Delay)
@@ -80,7 +80,7 @@ impl CctvToolkit {
             println!("LAN Scanning... (mock)");
         }
         
-        draw_text(display, "Scan complete. Report saved.", Point::new(10, 210), Rgb565::YELLOW);
+        draw_text(display, "Scan complete.", Point::new(10, 100), Rgb565::YELLOW);
         delay.delay_millis(2000);
     }
 
@@ -101,7 +101,7 @@ impl CctvToolkit {
         draw_text(display, "[4] CVE Hints: 12 found", Point::new(10, 115), Rgb565::RED);
         delay.delay_millis(500);
         
-        draw_text(display, "Done. Backspace to return.", Point::new(10, 220), Rgb565::YELLOW);
+        draw_text(display, "Done. Backspace to return.", Point::new(10, 120), Rgb565::YELLOW);
         // In a real app, this would wait for input
         delay.delay_millis(2000);
     }
@@ -116,7 +116,7 @@ impl CctvToolkit {
         delay.delay_millis(1000);
         draw_text(display, "Processing 5 targets...", Point::new(10, 60), Rgb565::WHITE);
         delay.delay_millis(2000);
-        draw_text(display, "Batch finished.", Point::new(10, 210), Rgb565::YELLOW);
+        draw_text(display, "Batch finished.", Point::new(10, 100), Rgb565::YELLOW);
         delay.delay_millis(1000);
     }
 
@@ -131,7 +131,7 @@ impl CctvToolkit {
         let top_bar_style = embedded_graphics::primitives::PrimitiveStyleBuilder::new()
             .fill_color(Rgb565::new(10, 20, 31))
             .build();
-        embedded_graphics::primitives::Rectangle::new(Point::new(0, 0), Size::new(320, 25))
+        embedded_graphics::primitives::Rectangle::new(Point::new(0, 0), Size::new(240, 25))
             .draw_styled(&top_bar_style, display)
             .ok();
             
@@ -142,13 +142,13 @@ impl CctvToolkit {
             .stroke_color(Rgb565::new(20, 20, 20))
             .stroke_width(2)
             .build();
-        embedded_graphics::primitives::Rectangle::new(Point::new(40, 40), Size::new(240, 160))
+        embedded_graphics::primitives::Rectangle::new(Point::new(10, 40), Size::new(220, 70))
             .draw_styled(&frame_style, display)
             .ok();
         
         draw_text(display, "LIVE FEED MOCK", Point::new(100, 120), Rgb565::RED);
 
-        draw_text(display, ",/. Prev/Next  r Res  ;/. Comp", Point::new(10, 220), Rgb565::WHITE);
+        draw_text(display, ",/. Prev/Next  r Res  ;/. Comp", Point::new(10, 120), Rgb565::WHITE);
         
         delay.delay_millis(3000);
     }
@@ -173,7 +173,7 @@ impl CctvToolkit {
             }
         }
 
-        draw_text(display, "Scan paused. Enter to resume.", Point::new(10, 220), Rgb565::WHITE);
+        draw_text(display, "Scan paused. Enter to resume.", Point::new(10, 120), Rgb565::WHITE);
         delay.delay_millis(2000);
     }
 }
