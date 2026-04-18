@@ -85,6 +85,7 @@ use iris::apps::cctv;
 use iris::apps::scanner;
 use iris::apps::wifi;
 use iris::apps::bluetooth;
+use iris::apps::settings;
 use esp_hal::i2c::master::{Config as I2cConfig, I2c};
 
 // Consts
@@ -191,7 +192,7 @@ fn main() -> ! {
     ssh::setup_auth();
 
     println!("Battery percentage: {}%", get_battery_percentage(peripherals.ADC1, peripherals.GPIO10));
-    let menu_items = ["GPS", "File Manager", "SSH Auth", "CCTV Toolkit", "Scanner", "Marauder", "Bluetooth", "Power"];
+    let menu_items = ["GPS", "File Manager", "SSH Auth", "CCTV Toolkit", "Scanner", "Marauder", "Bluetooth", "Settings", "Power"];
     let mut selected_idx = 0;
 
     let keyboard_a0 = Output::new(peripherals.GPIO8, Level::Low, OutputConfig::default());
@@ -291,6 +292,11 @@ fn main() -> ! {
                             println!("Starting Bluetooth Tools...");
                             let mut bt_app = bluetooth::BluetoothApp::new();
                             bt_app.run(&mut display, &mut delay, &mut keyboard);
+                        }
+                        "Settings" => {
+                            println!("Starting Settings...");
+                            let mut settings_app = settings::SettingsApp::new();
+                            settings_app.run(&mut display, &mut delay, &mut keyboard);
                         }
                         _ => {
                             println!("Selected: {}", menu_items[selected_idx]);

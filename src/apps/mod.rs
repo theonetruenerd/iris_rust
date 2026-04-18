@@ -17,3 +17,4 @@ pub mod scanner;
 pub mod mag_switch;
 pub mod gas_sensor;
 pub mod breadboard;
+pub mod settings;
