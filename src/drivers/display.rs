@@ -76,6 +76,9 @@ where
     let bg_style = PrimitiveStyleBuilder::new()
         .fill_color(Rgb565::BLACK)
         .build();
+    // Cardputer display is 240x135, but ST7789 might need offsets.
+    // In main.rs, it's initialized with .display_size(135, 240) and .display_offset(40, 52).
+    // The orientation is rotated 90 deg, so width=240, height=135.
     Rectangle::new(Point::new(0, 0), Size::new(240, 135))
         .draw_styled(&bg_style, display)
         .ok();

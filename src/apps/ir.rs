@@ -60,14 +60,15 @@ impl IrApp {
                 needs_redraw = false;
             }
             
-            if let Some((col, row)) = keyboard.scan() {
-                match (col, row) {
-                    (0, 0) | (1, 0) | (2, 0) | (3, 0) | (4, 0) | (5, 0) | (6, 0) | (7, 0) => { // Next/Down
+            if let Some(key) = keyboard.get_key() {
+                use crate::drivers::keyboard::Key;
+                match key {
+                    Key::Down | Key::Up => { // Next/Down
                         self.selected_option = (self.selected_option + 1) % self.options.len();
                         needs_redraw = true;
                         delay.delay_millis(200);
                     }
-                    (0, 1) | (1, 1) | (2, 1) | (3, 1) | (4, 1) | (5, 1) | (6, 1) | (7, 1) => { // Select
+                    Key::Enter => { // Select
                         match self.options[self.selected_option] {
                             "Brute Force TV" => self.brute_force_tv(display, delay, keyboard),
                             "Brute Force AC" => self.brute_force_ac(display, delay, keyboard),
@@ -86,7 +87,7 @@ impl IrApp {
                                 draw_text(display, "Press any key to back", Point::new(10, 120), Rgb565::YELLOW);
                                 delay.delay_millis(500);
                                 loop {
-                                    if keyboard.scan().is_some() { break; }
+                                    if keyboard.get_key().is_some() { break; }
                                     delay.delay_millis(50);
                                 }
                             }
@@ -96,7 +97,7 @@ impl IrApp {
                         needs_redraw = true;
                         delay.delay_millis(200);
                     }
-                    (0, 2) | (1, 2) | (2, 2) | (3, 2) | (4, 2) | (5, 2) | (6, 2) | (7, 2) => { // Back
+                    Key::Backspace | Key::Esc => { // Back
                         self.is_running = false;
                         delay.delay_millis(200);
                     }
@@ -124,8 +125,11 @@ impl IrApp {
         ];
 
         for (i, code) in common_codes.iter().enumerate() {
-            if let Some((0, 2)) = keyboard.scan() {
-                break;
+            if let Some(key) = keyboard.get_key() {
+                use crate::drivers::keyboard::Key;
+                if key == Key::Backspace || key == Key::Esc {
+                    break;
+                }
             }
             
             println!("Sending TV code: {:08X}", code);
@@ -209,7 +213,7 @@ impl IrApp {
         draw_text(display, "Press any key to exit", Point::new(10, 220), Rgb565::YELLOW);
         
         loop {
-            if keyboard.scan().is_some() {
+            if keyboard.get_key().is_some() {
                 break;
             }
             delay.delay_millis(50);

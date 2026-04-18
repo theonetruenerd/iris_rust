@@ -27,11 +27,11 @@ pub struct Terminal {
 impl Terminal {
     pub fn new() -> Self {
         Self {
-            rows: 24,
+            rows: 13,
             cols: 40,
             cursor_x: 0,
             cursor_y: 0,
-            buffer: [[(' ', Rgb565::WHITE); 40]; 24],
+            buffer: [[(' ', Rgb565::WHITE); 40]; 24], // Internal buffer can stay 24 for now, but rows set to 13
             current_color: Rgb565::WHITE,
         }
     }
@@ -88,13 +88,17 @@ impl Terminal {
         D: DrawTarget<Color = Rgb565>,
     {
         crate::drivers::display::clear_screen(display);
+        // FONT_6X10 is 6 pixels wide, 10 pixels high.
+        // Screen is 240x135.
+        // 240 / 6 = 40 columns.
+        // 135 / 10 = 13.5 rows. 
         for y in 0..self.rows as usize {
             for x in 0..self.cols as usize {
                 let (c, color) = self.buffer[y][x];
                 if c != ' ' {
                     let mut s = [0u8; 4];
                     let text = c.encode_utf8(&mut s);
-                    draw_text(display, text, Point::new(x as i32 * 8, (y as i32 + 1) * 10), color);
+                    draw_text(display, text, Point::new(x as i32 * 6, y as i32 * 10 + 10), color);
                 }
             }
         }

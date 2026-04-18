@@ -157,7 +157,7 @@ fn main() -> ! {
     let mut display = Builder::new(ST7789, di)
         .reset_pin(rst)
         .display_size(135, 240)
-        .display_offset(40, 52)
+        .display_offset(40, 53)
         .invert_colors(ColorInversion::Inverted)
         .orientation(Orientation::new().rotate(Rotation::Deg90))
         .init(&mut delay)
@@ -230,15 +230,25 @@ fn main() -> ! {
             needs_redraw = false;
         }
 
-        if let Some((col, row)) = keyboard.scan() {
-            println!("Key pressed: col {}, row {}", col, row);
-            match (col, row) {
-                (0, 0) | (1, 0) | (2, 0) | (3, 0) | (4, 0) | (5, 0) | (6, 0) | (7, 0) => {
+        if let Some(key) = keyboard.get_key() {
+            use iris::drivers::keyboard::Key;
+            println!("Key pressed: {:?}", key);
+            match key {
+                Key::Up => {
+                    if selected_idx > 0 {
+                        selected_idx -= 1;
+                    } else {
+                        selected_idx = menu_items.len() - 1;
+                    }
+                    needs_redraw = true;
+                    delay.delay_millis(200);
+                }
+                Key::Down => {
                     selected_idx = (selected_idx + 1) % menu_items.len();
                     needs_redraw = true;
                     delay.delay_millis(200);
                 }
-                (0, 1) | (1, 1) | (2, 1) | (3, 1) | (4, 1) | (5, 1) | (6, 1) | (7, 1) => {
+                Key::Enter => {
                     match menu_items[selected_idx] {
                         "Scanner" => {
                             println!("Starting I2C Scanner...");
@@ -254,13 +264,16 @@ fn main() -> ! {
                             terminal.render(&mut display);
                             
                             loop {
-                                if let Some((c, r)) = keyboard.scan() {
-                                    if c == 0 && r == 2 { // Assume escape or something to exit
+                                if let Some(k) = keyboard.get_key() {
+                                    if k == Key::Esc || k == Key::Backspace { // Exit on Esc or Backspace
                                         break;
                                     }
                                     // Map keyboard to characters and write to terminal
-                                    // For now just show we can write
-                                    terminal.write_char('.');
+                                    if let Key::Char(c) = k {
+                                        terminal.write_char(c);
+                                    } else if k == Key::Enter {
+                                        terminal.write_char('\n');
+                                    }
                                     terminal.render(&mut display);
                                     delay.delay_millis(150);
                                 }
@@ -274,17 +287,17 @@ fn main() -> ! {
                             
                             loop {
                                 toolkit.render_menu(&mut display);
-                                if let Some((col, row)) = keyboard.scan() {
-                                    match (col, row) {
-                                        (0, 0) | (1, 0) | (2, 0) | (3, 0) | (4, 0) | (5, 0) | (6, 0) | (7, 0) => { // Up/Next
+                                if let Some(k) = keyboard.get_key() {
+                                    match k {
+                                        Key::Down | Key::Up => { // Navigate
                                             toolkit.selected_module = (toolkit.selected_module + 1) % toolkit.modules.len();
                                             delay.delay_millis(200);
                                         }
-                                        (0, 1) | (1, 1) | (2, 1) | (3, 1) | (4, 1) | (5, 1) | (6, 1) | (7, 1) => { // Select
+                                        Key::Enter => { // Select
                                             toolkit.run_module(&mut display, &mut delay);
                                             delay.delay_millis(200);
                                         }
-                                        (0, 2) | (1, 2) | (2, 2) | (3, 2) | (4, 2) | (5, 2) | (6, 2) | (7, 2) => { // Backspace/Back
+                                        Key::Backspace | Key::Esc => { // Back
                                             break;
                                         }
                                         _ => {}
