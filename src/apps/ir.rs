@@ -35,17 +35,42 @@ impl IrApp {
     where
         D: DrawTarget<Color = Rgb565>,
     {
+        use embedded_graphics::primitives::{Rectangle, PrimitiveStyleBuilder, StyledDrawable};
+        use embedded_graphics::geometry::{Point, Size};
         clear_screen(display);
-        draw_text(display, "IR Controller", Point::new(10, 15), Rgb565::CYAN);
+
+        // Header
+        let header_style = PrimitiveStyleBuilder::new()
+            .fill_color(Rgb565::new(0, 40, 0)) // Dark Green
+            .build();
+        Rectangle::new(Point::new(0, 0), Size::new(240, 20))
+            .draw_styled(&header_style, display)
+            .ok();
+        draw_text(display, "📡 IR CONTROLLER", Point::new(10, 13), Rgb565::GREEN);
         
         for (i, &option) in self.options.iter().enumerate() {
-            let color = if i == self.selected_option {
-                Rgb565::YELLOW
+            let y = 35 + (i as i32 * 15);
+            if i == self.selected_option {
+                let select_style = PrimitiveStyleBuilder::new()
+                    .fill_color(Rgb565::new(20, 20, 20))
+                    .build();
+                Rectangle::new(Point::new(5, y - 11), Size::new(230, 14))
+                    .draw_styled(&select_style, display)
+                    .ok();
+                draw_text(display, option, Point::new(15, y), Rgb565::YELLOW);
             } else {
-                Rgb565::WHITE
-            };
-            draw_text(display, option, Point::new(20, 35 + (i as i32 * 12)), color);
+                draw_text(display, option, Point::new(15, y), Rgb565::WHITE);
+            }
         }
+
+        // Footer
+        let footer_style = PrimitiveStyleBuilder::new()
+            .fill_color(Rgb565::new(10, 10, 10))
+            .build();
+        Rectangle::new(Point::new(0, 120), Size::new(240, 15))
+            .draw_styled(&footer_style, display)
+            .ok();
+        draw_text(display, "Up/Dn: Navigate | Enter: Select | BS: Back", Point::new(5, 130), Rgb565::new(31, 63, 31));
     }
 
     pub fn run<D>(&mut self, display: &mut D, delay: &mut Delay, keyboard: &mut Keyboard, _sd: &mut SdCardType)
@@ -63,8 +88,17 @@ impl IrApp {
             if let Some(key) = keyboard.get_key() {
                 use crate::drivers::keyboard::Key;
                 match key {
-                    Key::Down | Key::Up => { // Next/Down
+                    Key::Down => {
                         self.selected_option = (self.selected_option + 1) % self.options.len();
+                        needs_redraw = true;
+                        delay.delay_millis(200);
+                    }
+                    Key::Up => {
+                        if self.selected_option > 0 {
+                            self.selected_option -= 1;
+                        } else {
+                            self.selected_option = self.options.len() - 1;
+                        }
                         needs_redraw = true;
                         delay.delay_millis(200);
                     }

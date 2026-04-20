@@ -24,24 +24,48 @@ impl CctvToolkit {
         }
     }
 
-    pub fn render_menu<D>(&self, display: &mut D)
+    pub fn render_menu<D>(&mut self, display: &mut D)
     where
         D: DrawTarget<Color = Rgb565>,
     {
+        use crate::drivers::display::{clear_screen, draw_text};
+        use embedded_graphics::primitives::{Rectangle, PrimitiveStyleBuilder, StyledDrawable};
+        use embedded_graphics::geometry::{Point, Size};
+
         clear_screen(display);
-        draw_text(display, "📹 CCTV Toolkit", Point::new(10, 20), Rgb565::CYAN);
         
+        // Header
+        let header_style = PrimitiveStyleBuilder::new()
+            .fill_color(Rgb565::new(40, 0, 0)) // Dark Red
+            .build();
+        Rectangle::new(Point::new(0, 0), Size::new(240, 20))
+            .draw_styled(&header_style, display)
+            .ok();
+        draw_text(display, "📹 CCTV TOOLKIT", Point::new(10, 13), Rgb565::RED);
+
         for (i, &module) in self.modules.iter().enumerate() {
-            let color = if i == self.selected_module {
-                Rgb565::YELLOW
+            let y = 35 + (i as i32 * 15);
+            if i == self.selected_module {
+                let select_style = PrimitiveStyleBuilder::new()
+                    .fill_color(Rgb565::new(30, 30, 30))
+                    .build();
+                Rectangle::new(Point::new(5, y - 11), Size::new(230, 14))
+                    .draw_styled(&select_style, display)
+                    .ok();
+                draw_text(display, module, Point::new(15, y), Rgb565::YELLOW);
             } else {
-                Rgb565::WHITE
-            };
-            draw_text(display, module, Point::new(20, 35 + (i as i32 * 12)), color);
+                draw_text(display, module, Point::new(15, y), Rgb565::WHITE);
+            }
         }
 
-        draw_text(display, ";/. Up/Down  Enter Select", Point::new(10, 110), Rgb565::new(31, 63, 31));
-        draw_text(display, "Backspace Back", Point::new(10, 125), Rgb565::new(31, 63, 31));
+        // Footer
+        let footer_style = PrimitiveStyleBuilder::new()
+            .fill_color(Rgb565::new(20, 20, 20))
+            .build();
+        Rectangle::new(Point::new(0, 120), Size::new(240, 15))
+            .draw_styled(&footer_style, display)
+            .ok();
+        draw_text(display, "Up/Dn: Navigate | Enter: Select | BS: Back", Point::new(5, 130), Rgb565::new(31, 63, 31));
     }
 
     pub fn run_module<D>(&self, display: &mut D, delay: &mut Delay)

@@ -148,11 +148,8 @@ fn main() -> ! {
 
     let di = SpiInterface::new(spi_device, dc, &mut buffer);
 
-    let image_w = 240;
-    let image_h = 135;
-
-    let x_position = (DISPLAY_WIDTH - image_w) / 2;
-    let y_position = (DISPLAY_HEIGHT - image_h) / 2;
+    const DISPLAY_WIDTH: i32 = 240;
+    const DISPLAY_HEIGHT: i32 = 135;
 
     let mut display = Builder::new(ST7789, di)
         .reset_pin(rst)
@@ -195,7 +192,8 @@ fn main() -> ! {
 
     ssh::setup_auth();
 
-    println!("Battery percentage: {}%", get_battery_percentage(peripherals.ADC1, peripherals.GPIO10));
+    let battery_perc = get_battery_percentage(peripherals.ADC1, peripherals.GPIO10);
+    println!("Battery percentage: {}%", battery_perc);
     let menu_items = ["GPS", "File Manager", "SSH Auth", "CCTV Toolkit", "Scanner", "Marauder", "Bluetooth", "IR Controller", "Settings", "Power"];
     let mut selected_idx = 0;
 
@@ -223,10 +221,13 @@ fn main() -> ! {
     .with_sda(peripherals.GPIO1)
     .with_scl(peripherals.GPIO2);
 
-    let mut needs_redraw = true;
+    // Initial draw
+    draw_menu(&mut display, &menu_items, selected_idx, battery_perc);
+    
+    let mut needs_redraw = false;
     loop {
         if needs_redraw {
-            draw_menu(&mut display, &menu_items, selected_idx);
+            draw_menu(&mut display, &menu_items, selected_idx, battery_perc);
             needs_redraw = false;
         }
 
@@ -241,18 +242,18 @@ fn main() -> ! {
                         selected_idx = menu_items.len() - 1;
                     }
                     needs_redraw = true;
-                    delay.delay_millis(200);
+                    delay.delay_millis(150); // Improved debounce
                 }
                 Key::Down => {
                     selected_idx = (selected_idx + 1) % menu_items.len();
                     needs_redraw = true;
-                    delay.delay_millis(200);
+                    delay.delay_millis(150); // Improved debounce
                 }
                 Key::Enter => {
                     match menu_items[selected_idx] {
                         "Scanner" => {
                             println!("Starting I2C Scanner...");
-                            scanner::scan_i2c(&mut i2c);
+                            scanner::scan_i2c(&mut i2c, &mut display, &mut delay, &mut keyboard);
                         }
                         "SSH Auth" => {
                             println!("Starting SSH Terminal...");
@@ -287,8 +288,16 @@ fn main() -> ! {
                                 toolkit.render_menu(&mut display);
                                 if let Some(k) = keyboard.get_key() {
                                     match k {
-                                        Key::Down | Key::Up => { // Navigate
+                                        Key::Down => {
                                             toolkit.selected_module = (toolkit.selected_module + 1) % toolkit.modules.len();
+                                            delay.delay_millis(200);
+                                        }
+                                        Key::Up => {
+                                            if toolkit.selected_module > 0 {
+                                                toolkit.selected_module -= 1;
+                                            } else {
+                                                toolkit.selected_module = toolkit.modules.len() - 1;
+                                            }
                                             delay.delay_millis(200);
                                         }
                                         Key::Enter => { // Select
